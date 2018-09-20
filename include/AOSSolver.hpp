@@ -10,12 +10,19 @@ public:
   virtual void Evaluate();
 };
 
-class GA_AOSSolver : public AOSSolver {
+class GASolver : public AOSSolver {
 public:
-  GA_AOSSolver();
-  void Solve();
+  GASolver();
+  void Solve() override;
+  void Evaluate() override;
 };
 
-class RMHCSolver : public AOSSolver {};
+class RMHCSolver : public AOSSolver {
+public:
+  RMHCSolver();
+
+  void Solve() override;
+  void Evaluate() override;
+};
 
 }; // namespace dbt

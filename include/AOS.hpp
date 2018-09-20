@@ -4,15 +4,13 @@
 #include <string>
 
 namespace dbt {
-struct AOSParams {
-  AOSParams(const std::string &filename);
-};
+struct AOSParams {};
 
 class AOS {
-  AOSSolver &solver;
+  AOSSolver *solver;
 
 public:
   AOS(const AOSParams &params);
-  void Run();
+  void Run() { solver->Solve(); }
 };
-};
+}; // namespace dbt

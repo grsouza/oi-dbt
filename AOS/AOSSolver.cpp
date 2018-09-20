@@ -2,6 +2,8 @@
 
 using namespace dbt;
 
-GA_AOSSolver::GA_AOSSolver() : AOSSolver() {}
+GASolver::GASolver() : AOSSolver() {}
 
-void GA_AOSSolver::Solve() {}
+void GASolver::Solve() {}
+
+void GASolver::Evaluate() {}

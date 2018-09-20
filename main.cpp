@@ -81,8 +81,9 @@ int validateArguments() {
     return 1;
   }
 
-  if (AOSFlag.was_set() && AOSFlag.value == "") {
-    cerr << "You must set the path of the AOS input file.\n" return 1;
+  if (AOSFlag.was_set() && AOSFlag.get_value() == "") {
+    cerr << "You must set the path of the AOS input file.\n";
+    return 1;
   }
 
   if (!BinaryFlag.was_set()) {
@@ -190,6 +191,7 @@ int main(int argc, char **argv) {
     return 2;
   }
 
+  dbt::AOS TheAOS = AOS::create(AOSFlag.get_value());
   dbt::Manager TheManager(M.getDataMemOffset(), M, VerboseFlag.was_set());
 
   if (LoadRegionsFlag.was_set() || LoadOIFlag.was_set() ||

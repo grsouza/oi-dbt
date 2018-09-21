@@ -1,21 +1,17 @@
 #pragma once
+#include <string>
+#include <vector>
 
 namespace dbt {
+
+struct AOSSolverParams {};
+
 class AOSSolver {
 public:
-  AOSSolver() {}
+  AOSSolver(const AOSSolverParams &params) {}
   virtual ~AOSSolver() {}
 
-  virtual void Solve();
-  virtual void Evaluate();
+  virtual std::vector<std::string> Solve() = 0;
+  virtual void Evaluate() = 0;
 };
-
-class GA_AOSSolver : public AOSSolver {
-public:
-  GA_AOSSolver();
-  void Solve();
-};
-
-class RMHCSolver : public AOSSolver {};
-
 }; // namespace dbt

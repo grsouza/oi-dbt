@@ -16,6 +16,7 @@ set(CMAKE_CXX_ARCHIVE_FINISH   true)
 
 include_directories(include)
 
+add_subdirectory(AOS)
 add_subdirectory(RFT)
 add_subdirectory(arglib)
 
@@ -37,6 +38,7 @@ install(TARGETS oi-dbt RUNTIME DESTINATION bin)
 
 target_link_libraries(oi-dbt
   papi 
+  AOS
   RFT 
   dbt 
   arglib 

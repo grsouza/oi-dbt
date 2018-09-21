@@ -1,18 +1,21 @@
 #pragma once
 
+#include "AOSParams.hpp"
 #include "AOSSolver.hpp"
-#include <string>
+
+// typedef std::vector<std::string> Threshold;
 
 namespace dbt {
-struct AOSParams {
-  AOSParams(const std::string &filename);
-};
 
 class AOS {
-  AOSSolver &solver;
+  AOSSolver *solver;
 
 public:
-  AOS(const AOSParams &params);
+  static AOS create(const std::string &filePath);
   void Run();
+
+private:
+  AOS(const AOSParams &params);
 };
-};
+}; // namespace dbt
+

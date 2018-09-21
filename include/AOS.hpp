@@ -1,17 +1,22 @@
 #pragma once
 
 #include "AOSSolver.hpp"
+#include "llvm/Support/YAMLTraits.h"
+#include <string>
+#include <vector>
+#include <iostream>
+
+//typedef std::vector<std::string> Threshold;
 
 namespace dbt {
 
 class AOS {
   AOSSolver *solver;
-
+  
 public:
-  static AOS create(const char *filePath);
+  static AOS create(const std::string &filePath);
   void Run() { solver->Solve(); }
 
-private:
   struct Params {
     /* number of times to execute a program, and then calculate the average */
     unsigned times;
@@ -23,7 +28,7 @@ private:
     std::string database;
 
     /* compiler level optimization (or sequence) that will act as baseline */
-    std::vector<std::string> threshold;
+//    Threshold threshold;
 
     /* max sequence length */
     unsigned max;
@@ -114,8 +119,47 @@ private:
 
     /* invoke an iterative compilation strategy in a second round */
     bool invokeIC;
+
+    void Dump() const {
+      std::cout << "times: " << times << std::endl
+                << "updateDatabase: " << updateDatabase << std::endl
+                << "database: " << database << std::endl;
+/*
+      std::cout << "threshold: [";
+
+      for (auto &clo : threshold)
+        std::cout << clo << ", ";
+
+      std::cout << "]" << std::endl;
+      */
+
+      std::cout << "max: " << max << std::endl
+                << "min: " << min << std::endl
+                << "onlyOnce: " << onlyOnce << std::endl
+                << "roi: " << roi << std::endl;
+    }
+
   };
 
-  AOS(const Params &params);
+private:
+  AOS(const AOS::Params &params);
+
 };
 }; // namespace dbt
+
+  template <>
+  struct llvm::yaml::MappingTraits<dbt::AOS::Params> {
+    static void mapping(llvm::yaml::IO &io, dbt::AOS::Params &params) {
+      io.mapRequired("times", params.times);
+      io.mapRequired("updateDatabase", params.updateDatabase);
+      io.mapRequired("database", params.database);
+      //io.mapRequired("threshold", params.threshold);      
+      io.mapRequired("max", params.max);
+      io.mapRequired("min", params.min);
+      io.mapRequired("onlyOnce", params.onlyOnce);
+      io.mapRequired("roi", params.roi);
+    }
+  };
+
+
+

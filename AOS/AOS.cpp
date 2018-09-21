@@ -6,11 +6,11 @@
 
 using namespace dbt;
 
-AOS AOS::create(const char *filePath) {
+AOS AOS::create(const std::string &filePath) {
   auto InputBuffer = llvm::MemoryBuffer::getFile(filePath);
   llvm::yaml::Input yin(InputBuffer->get()->getBuffer());
 
-  Params params;
+  AOS::Params params;
   yin >> params;
 
   if (yin.error()) {
@@ -21,16 +21,19 @@ AOS AOS::create(const char *filePath) {
 }
 
 AOS::AOS(const AOS::Params &params) {
+
+  params.Dump();
+
   // TODO: Construct AOSSolver from params
 
-  switch (params.icStrategy.stragegy) {
-  case AOS::Params::ICStrategy::GA:
-    std::cout << "Number of generations: "
-              << params.icStrategy.params.ga.numberOfGenerations << std::endl;
-    break;
-
-  case AOS::Params::ICStrategy::RMHC:
-    std::cout << "Mutation rate: " << params.icStrategy.params.rmhc.mutationRate
-              << std::endl;
-  }
+//  switch (params.icStrategy.stragegy) {
+//  case AOS::Params::ICStrategy::GA:
+//    std::cout << "Number of generations: "
+//              << params.icStrategy.params.ga.numberOfGenerations << std::endl;
+//    break;
+//
+//  case AOS::Params::ICStrategy::RMHC:
+//    std::cout << "Mutation rate: " << params.icStrategy.params.rmhc.mutationRate
+//              << std::endl;
+//  }
 }

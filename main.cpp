@@ -8,9 +8,10 @@
 
 #include <iostream>
 #include <machine.hpp>
+#include "AOS.hpp"
 #include <memory>
 
-clarg::argString AOSFlag("-aos", "Automatic optimization selection input file",
+clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file",
                          "");
 clarg::argString RFTFlag("-rft", "Region Formation Technique (net)",
                          "netplus-e-r");
@@ -191,7 +192,7 @@ int main(int argc, char **argv) {
     return 2;
   }
 
-  dbt::AOS TheAOS = AOS::create(AOSFlag.get_value());
+  dbt::AOS TheAOS = dbt::AOS::create(AOSFlag.get_value());
   dbt::Manager TheManager(M.getDataMemOffset(), M, VerboseFlag.was_set());
 
   if (LoadRegionsFlag.was_set() || LoadOIFlag.was_set() ||

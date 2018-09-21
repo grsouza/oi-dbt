@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <vector>
 
 namespace dbt {
 
@@ -6,34 +8,10 @@ struct AOSSolverParams {};
 
 class AOSSolver {
 public:
-  AOSSolver() {}
+  AOSSolver(const AOSSolverParams &params) {}
   virtual ~AOSSolver() {}
 
-  virtual void Solve();
-  virtual void Evaluate();
+  virtual std::vector<std::string> Solve() = 0;
+  virtual void Evaluate() = 0;
 };
-
-struct GASolverParams : public AOSSolverParams {
-  unsigned numberOfGenerations;
-};
-
-class GASolver : public AOSSolver {
-public:
-  GASolver();
-  void Solve() override;
-  void Evaluate() override;
-};
-
-struct RMHCSolverParams : public AOSSolverParams {
-  float mutationRate;
-};
-
-class RMHCSolver : public AOSSolver {
-public:
-  RMHCSolver();
-
-  void Solve() override;
-  void Evaluate() override;
-};
-
 }; // namespace dbt

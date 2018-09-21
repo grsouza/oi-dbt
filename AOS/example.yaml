@@ -31,7 +31,10 @@ roi: 396
 # SECTION 1: Iterative compilation
 
 # Iterative compilation algorithm
-strategy: GA
+icStrategy: RMHC
+icStrategyParams:
+  generations: 100
+  mutation: 0.8
 #  - (GAT) Genetic Algorithm with tournament 
 #          parameters:
 #            - G=<NUM> - Generations
@@ -45,10 +48,10 @@ strategy: GA
 #  - (RND) Random
 
 # The goal (compile for?)
-objective:
-  - runtime
-  - size
-  - energy
+objective: [ runtime ]
+  # - runtime
+  # - size
+  # - energy
 
     #  You can use only one or: obj1 + ... + ...
 
@@ -56,21 +59,26 @@ objective:
 createDatabase: false
 
 # create a final report
-report: SMP
+report: NONE
+  # - SIMPLE
+  # - DETAILED
+  # - NONE
 
 # use iterative compilation as a training phase
 training: true
 
 # the training programs
-trainingPrograms: 
-  - FloatMM
+# trainingPrograms: 
+#   - FloatMM
 
 
     # SECTION 2: Machine Learning
 
 # Machine learning strategy
-strategy: DPL
-#  - (CBR) Case-based reasoning
+# mlStrategy: DPL
+# mlStrategyParams:
+#   param1: 0
+# #  - (CBR) Case-based reasoning
 #  - (DPL) Deep learning
 #  - (RFL) Reinforcement learning
 #  - (LTL) Long-term learning

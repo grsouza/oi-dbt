@@ -23,23 +23,16 @@ AOS AOS::create(const std::string &filePath) {
 
 AOS::AOS(const AOSParams &params) {
   // TODO: Construct AOSSolver from params
-
-  //  switch (params.icStrategy.stragegy) {
-  //  case AOS::Params::ICStrategy::GA:
-  //    std::cout << "Number of generations: "
-  //              << params.icStrategy.params.ga.numberOfGenerations <<
-  //              std::endl;
-  //    break;
-  //
-  //  case AOS::Params::ICStrategy::RMHC:
-  //    std::cout << "Mutation rate: " <<
-  //    params.icStrategy.params.rmhc.mutationRate
-  //              << std::endl;
-  //  }
+  switch(params.icStrategy.value) {
+    case AOSParams::ICStrategy::GA:
+      this->solver = new GASolver(params.icStrategy.params.ga);
+      break;
+    case AOSParams::ICStrategy::RMHC:
+      this->solver = new RMHCSolver(params.icStrategy.params.rmhc);
+      break;
+  }
 }
 
-void AOS::Run() {
-  // std::vector<std::string> OptSequence = solver->Solve();
-  // for (auto &opt : OptSequence)
-  //   std::cout << opt << std::endl;
+void AOS::Run(llvm::Module *M) {
+  this->solver->Solve(M);
 }

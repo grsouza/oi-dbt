@@ -4,14 +4,14 @@
 namespace dbt {
 struct RMHCSolverParams : public AOSSolverParams {
   unsigned generations;
-  float mutation;
+  float mutationRate;
 };
 
 class RMHCSolver : public AOSSolver {
 public:
   RMHCSolver(const RMHCSolverParams &params);
 
-  std::vector<std::string> Solve() override;
+  std::vector<std::string> Solve(llvm::Module *M) override;
   void Evaluate() override;
 };
-};
+}

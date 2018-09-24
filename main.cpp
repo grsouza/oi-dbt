@@ -191,8 +191,8 @@ int main(int argc, char **argv) {
     return 2;
   }
 
-  dbt::AOS TheAOS = dbt::AOS::create(AOSFlag.get_value());
-  dbt::Manager TheManager(M.getDataMemOffset(), M, VerboseFlag.was_set());
+  dbt::AOS A = dbt::AOS::create(AOSFlag.get_value());
+  dbt::Manager TheManager(M.getDataMemOffset(), M, A, VerboseFlag.was_set());
 
   if (LoadRegionsFlag.was_set() || LoadOIFlag.was_set() ||
       WholeCompilationFlag.was_set())

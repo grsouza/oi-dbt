@@ -6,12 +6,14 @@ using namespace llvm::yaml;
 
 void MappingTraits<GASolverParams>::mapping(IO &io, GASolverParams &params) {
   io.mapRequired("generations", params.generations);
+  io.mapRequired("mutationRate", params.mutationRate);
+  io.mapRequired("populationSize", params.populationSize);
 }
 
 void MappingTraits<RMHCSolverParams>::mapping(IO &io,
                                               RMHCSolverParams &params) {
   io.mapRequired("generations", params.generations);
-  io.mapRequired("mutation", params.mutation);
+  io.mapRequired("mutationRate", params.mutationRate);
 }
 
 void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
@@ -26,12 +28,12 @@ void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
   io.mapRequired("icStrategy", params.icStrategy.value);
 
   switch (params.icStrategy.value) {
-  case AOSParams::ICStrategy::Value::GA:
-    io.mapRequired("icStrategyParams", params.icStrategy.params.ga);
-    break;
-  case AOSParams::ICStrategy::Value::RMHC:
-    io.mapRequired("icStrategyParams", params.icStrategy.params.rmhc);
-    break;
+    case AOSParams::ICStrategy::Value::GA:
+      io.mapRequired("icStrategyParams", params.icStrategy.params.ga);
+      break;
+    case AOSParams::ICStrategy::Value::RMHC:
+      io.mapRequired("icStrategyParams", params.icStrategy.params.rmhc);
+      break;
   }
 
   io.mapRequired("retrieving", params.retrieve);

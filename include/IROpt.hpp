@@ -3,9 +3,11 @@
 
 #include "llvm/IR/Module.h"
 #include "llvm/IR/LegacyPassManager.h"
+#include <AOS.hpp>
 
 namespace dbt {
-	class IROpt {
+	class AOS;
+  class IROpt {
     std::unique_ptr<llvm::legacy::FunctionPassManager> BasicPM;
 
     void populateFuncPassManager(llvm::legacy::FunctionPassManager*, std::vector<std::string>);
@@ -14,7 +16,7 @@ namespace dbt {
 
     enum OptLevel { Basic, Soft, Medium, Hard, Custom };
 
-    void optimizeIRFunction(llvm::Module*, OptLevel);
+    void optimizeIRFunction(llvm::Module*, OptLevel, dbt::AOS& A);
     void customOptimizeIRFunction(llvm::Module*, std::vector<std::string>);
   };
 }

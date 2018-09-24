@@ -5,6 +5,7 @@
 #include <IROpt.hpp>
 #include <IRJIT.hpp>
 #include <machine.hpp>
+#include <AOS.hpp>
 #include <thread>
 #include <mutex>
 #include <shared_mutex>
@@ -24,6 +25,7 @@
 namespace dbt {
   class IREmitter;
   class Machine;
+  class AOS;
   class Manager {
     public:
       enum OptPolitic { None, Normal, Aggressive, Custom };
@@ -31,6 +33,7 @@ namespace dbt {
     private:
       llvm::LLVMContext TheContext;
       dbt::Machine& TheMachine;
+      dbt::AOS& TheAOS;
       std::string RegionPath;
 
       std::vector<uint32_t> OIRegionsKey;
@@ -85,8 +88,7 @@ namespace dbt {
       void runPipeline();
 
     public:
-      Manager(uint32_t DMO, dbt::Machine& M, bool VO = false) : DataMemOffset(DMO), isRunning(true),
-          isFinished(false), VerboseOutput(VO), TheMachine(M), NumOfOIRegions(0) {
+      Manager(uint32_t DMO, dbt::Machine& M, dbt::AOS& A,  bool VO = false) : DataMemOffset(DMO), isRunning(true), isFinished(false), VerboseOutput(VO), TheMachine(M), TheAOS(A), NumOfOIRegions(0) {
         memset((void*) NativeRegions, 0, sizeof(NativeRegions));
       }
 

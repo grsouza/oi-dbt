@@ -34,7 +34,7 @@ roi: 396
 icStrategy: RMHC
 icStrategyParams:
   generations: 100
-  mutation: 0.8
+  mutationRate: 0.8
 #  - (GAT) Genetic Algorithm with tournament 
 #          parameters:
 #            - G=<NUM> - Generations
@@ -72,7 +72,7 @@ training: true
 #   - FloatMM
 
 
-    # SECTION 2: Machine Learning
+# SECTION 2: Machine Learning
 
 # Machine learning strategy
 # mlStrategy: DPL

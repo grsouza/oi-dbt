@@ -17,5 +17,5 @@ public:
 private:
   AOS(const AOSParams &params);
 };
-}; // namespace dbt
+} // namespace dbt
 

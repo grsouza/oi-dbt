@@ -49,20 +49,20 @@ icStrategyParams:
 
 # The goal (compile for?)
 objective: [ runtime ]
-  # - runtime
-  # - size
-  # - energy
+# - runtime
+# - size
+# - energy
 
-    #  You can use only one or: obj1 + ... + ...
+#  You can use only one or: obj1 + ... + ...
 
 # create a database ??????? PRECISA?????
 createDatabase: false
 
 # create a final report
-report: NONE
-  # - SIMPLE
-  # - DETAILED
-  # - NONE
+report: DETAILED
+# - SIMPLE
+# - DETAILED
+# - NONE
 
 # use iterative compilation as a training phase
 training: true

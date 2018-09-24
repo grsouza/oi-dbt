@@ -17,12 +17,11 @@ AOS AOS::create(const std::string &filePath) {
   if (yin.error()) {
     std::cerr << yin.error().message() << std::endl;
   }
-
+  
   return AOS(params);
 }
 
 AOS::AOS(const AOSParams &params) {
-
   // TODO: Construct AOSSolver from params
 
   //  switch (params.icStrategy.stragegy) {

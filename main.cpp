@@ -11,8 +11,7 @@
 #include "AOS.hpp"
 #include <memory>
 
-clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file",
-                         "");
+clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file", "");
 clarg::argString RFTFlag("-rft", "Region Formation Technique (net)",
                          "netplus-e-r");
 clarg::argInt HotnessFlag("-hot", "Hotness threshold for the RFTs", 50);
@@ -82,8 +81,8 @@ int validateArguments() {
     return 1;
   }
 
-  if (AOSFlag.was_set() && AOSFlag.get_value() == "") {
-    cerr << "You must set the path of the AOS input file.\n";
+  if (!AOSFlag.was_set()) {
+    cerr << "You must set the path of the AOS file!\n";
     return 1;
   }
 

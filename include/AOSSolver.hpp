@@ -14,4 +14,4 @@ public:
   virtual std::vector<std::string> Solve() = 0;
   virtual void Evaluate() = 0;
 };
-}; // namespace dbt
+} // namespace dbt

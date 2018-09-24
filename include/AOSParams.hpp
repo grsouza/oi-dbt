@@ -52,6 +52,7 @@ struct AOSParams {
     SIZE,
     ENERGY,
   };
+  
   std::vector<Goal> objetive;
 
   /* indicates if it should create a database */
@@ -114,7 +115,7 @@ struct AOSParams {
   /* invoke an iterative compilation strategy in a second round */
   bool invokeIC;
 };
-}; // namespace dbt
+} // namespace dbt
 
 template <> struct llvm::yaml::MappingTraits<dbt::GASolverParams> {
   static void mapping(llvm::yaml::IO &io, dbt::GASolverParams &params);
@@ -146,8 +147,10 @@ struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::CharacterizationStrat
                           dbt::AOSParams::CharacterizationStrategy &strategy);
 };
 
-template <> struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::Report> {
-  static void enumeration(llvm::yaml::IO &io, dbt::AOSParams::Report &report);
+template <> 
+struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::Report> {
+  static void enumeration(llvm::yaml::IO &io, 
+                          dbt::AOSParams::Report &report);
 };
 
 LLVM_YAML_IS_FLOW_SEQUENCE_VECTOR(dbt::AOSParams::Goal);

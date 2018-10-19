@@ -2,7 +2,7 @@
 
 using namespace dbt;
 
-RMHCSolver::RMHCSolver(const RMHCSolverParams &params) : AOSSolver(params) {}
+RMHCSolver::RMHCSolver(const RMHCSolverParams &params) : AOSSolver() {}
 
 std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
   std::vector<std::string> OptSequence;

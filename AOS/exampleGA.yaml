@@ -19,9 +19,9 @@ roi: 396
 
 icStrategy: GA 
 icStrategyParams:
-  generations: 1000
+  generations: 100
   mutationRate: 0.3
-  populationSize: 200
+  populationSize: 10
 
 objective: [ runtime ]
 

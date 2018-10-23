@@ -42,3 +42,4 @@ test/
 test/bin/
 test/bin/argv_param-oi
 test/bin/argv_param-oi
+.idea

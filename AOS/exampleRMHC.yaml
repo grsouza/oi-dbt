@@ -1,0 +1,51 @@
+# AOS Configuration File
+# COMMON
+
+times: 4
+
+updateDatabase: true
+
+database: test.db
+
+max: 40
+
+min: 5
+
+onlyOnce: false
+
+roi: 396
+
+# SECTION 1: Iterative compilation
+
+icStrategy: RMHC
+icStrategyParams:
+  generations: 1000
+  mutationRate: 0.3
+
+objective: [ runtime ]
+
+createDatabase: false
+
+report: DETAILED
+# - SIMPLE
+# - DETAILED
+# - NONE
+
+training: true
+
+# SECTION 2: Machine Learning
+characterization: DNA
+#  - (DNA) DNA-based approach (only the OpenISA instructions)
+#  - (DND) DNA-based approach (OpenISA instructions + data type) ????
+#  - (FLL) The complete region
+
+similarity: NaW
+#  - (NaW) Needleman-Wunsch algoritm
+#  - (CMP) Compress
+
+retrieving: JUST
+#  - ELITE
+#  - JUST
+#  - NEARLY
+
+invokeIC: false

@@ -20,10 +20,11 @@ sudo make install
 After building and installing oi-dbt, you can easily use it to emulate OpenISA elf binaries using the following commands:
 
 ```
-oi-dbt [-rft {net, mret2, lei, lef, netplus} | -interpreter] -bin PathToBinary [-v]
+oi-dbt [-rft {net, mret2, lei, lef, netplus} | -interpreter] -bin PathToBinary [-aos PathToAOSParams] [-v]
 
 ARGUMENTS:
   -bin : Path to the binary which will be emulated.
+  -aos : Path to file containing AOS input parameters.
   -h : Displays the help message
   -interpret : Only interpret.
   -rft : Region Formation Technique (net)

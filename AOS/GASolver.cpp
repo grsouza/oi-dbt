@@ -37,8 +37,7 @@ std::vector<std::string> GASolver::Solve(llvm::Module *M) {
   Pop = llvm::make_unique<Population>(Params.populationSize, 5, InitPopType::RANDOM);
   Pop->print();
   
-  //CA->getRuntime(M);
-  
+  std::cout << "IPC: " << CA->getIPC(M) << std::endl;
   //IRO->optimizeIRFunction(M, AOSIROpt::OptLevel::Basic);
   
   return OptSequence;

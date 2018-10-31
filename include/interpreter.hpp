@@ -41,4 +41,4 @@ namespace dbt {
 
     void execute(Machine&, uint32_t, uint32_t);
   };
-}
+} //namespace dbt

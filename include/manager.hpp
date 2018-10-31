@@ -2,7 +2,6 @@
 #define MANAGER_HPP
 
 #include <IREmitter.hpp>
-#include <IROpt.hpp>
 #include <IRJIT.hpp>
 #include <machine.hpp>
 #include <AOS.hpp>
@@ -59,7 +58,6 @@ namespace dbt {
       uint32_t DataMemOffset;
 
       std::unique_ptr<IREmitter> IRE;
-      std::unique_ptr<IROpt> IRO;
       std::unique_ptr<llvm::orc::IRJIT> IRJIT;
 
       std::atomic<bool> isRegionRecorging;
@@ -88,7 +86,7 @@ namespace dbt {
       void runPipeline();
 
     public:
-      Manager(uint32_t DMO, dbt::Machine& M, dbt::AOS& A,  bool VO = false) : DataMemOffset(DMO), isRunning(true), isFinished(false), VerboseOutput(VO), TheMachine(M), TheAOS(A), NumOfOIRegions(0) {
+      Manager(uint32_t DMO, dbt::Machine& M, dbt::AOS& A, bool VO = false) : DataMemOffset(DMO), isRunning(true), isFinished(false), VerboseOutput(VO), TheMachine(M), TheAOS(A), NumOfOIRegions(0) {
         memset((void*) NativeRegions, 0, sizeof(NativeRegions));
       }
 

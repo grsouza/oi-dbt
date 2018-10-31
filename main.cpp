@@ -155,6 +155,7 @@ loadCustomOpts(std::string CustomOptsPath) {
 int main(int argc, char **argv) {
   signal(SIGSEGV, sigHandler);
   signal(SIGABRT, sigHandler);
+  srand(time(NULL));
 
   dbt::Timer GlobalTimer;
 

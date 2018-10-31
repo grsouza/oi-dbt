@@ -3,7 +3,7 @@
 using namespace dbt;
 
 int getRandomNumber(int min, int max) {
-  return (rand() % 7)-1;
+  return (rand() % max)-1;
 }
 
 void DNA::print() {
@@ -11,6 +11,10 @@ void DNA::print() {
     std::cout << Genes[i] << " ";
   }
   std::cout << "\n";
+}
+
+std::vector<int> DNA::getGenes() {
+  return Genes;
 }
 
 void Population::print() {
@@ -34,11 +38,10 @@ Population::Population(unsigned int SizePop, unsigned int SizeGenes, InitPopType
 std::vector<std::string> GASolver::Solve(llvm::Module *M) {
   std::vector<std::string> OptSequence;
   
-  Pop = llvm::make_unique<Population>(Params.populationSize, 5, InitPopType::RANDOM);
-  Pop->print();
-  
-  std::cout << "IPC: " << CA->getIPC(M) << std::endl;
-  //IRO->optimizeIRFunction(M, AOSIROpt::OptLevel::Basic);
+  Pop = llvm::make_unique<Population>(Params.populationSize, Params.max, InitPopType::RANDOM);
+  //Pop->print();
+  IRO->optimizeIRFunction(M, AOSIROpt::OptLevel::Basic, Pop->Chromosomes[0]->getGenes());
+  std::cout << CA->getIPC(M) << std::endl;
   
   return OptSequence;
 }

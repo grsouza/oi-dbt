@@ -10,12 +10,13 @@
 
 #include <chrono>
 #include <ctime>
+#include <cctype>
+#include <iostream>
 
 namespace dbt {
   class CodeAnalyzer {
   public:
-    CodeAnalyzer() { 
-    }
+    CodeAnalyzer() {}
     double getIPC(llvm::Module *M);
   };
 } //namespace dbt;

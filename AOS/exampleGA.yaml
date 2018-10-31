@@ -22,6 +22,8 @@ icStrategyParams:
   generations: 100
   mutationRate: 0.3
   populationSize: 10
+  max: 40
+  min: 5
 
 objective: [ runtime ]
 

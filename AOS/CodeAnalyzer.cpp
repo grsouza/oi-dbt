@@ -1,5 +1,3 @@
-#include <iostream>
-#include <cctype>
 #include "CodeAnalyzer.hpp"
 using namespace dbt;
 
@@ -45,8 +43,10 @@ double CodeAnalyzer::getIPC(llvm::Module *M) {
   }
   //remove module.bc and module.s
   std::system("rm module.*");
-  if(ipc.size() > 0)
-    return strtod(ipc.c_str(), nullptr);;
-  return 0.0;
+  if(ipc.size() == 0) {
+    std::cerr << "Problems with llvm-mca!\n";
+    exit(1);
+  }
+  return strtod(ipc.c_str(), nullptr);;
 }
 

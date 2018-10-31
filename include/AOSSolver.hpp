@@ -12,7 +12,6 @@
 
 namespace dbt {
   struct AOSSolverParams {};
-
   class AOSSolver {
   protected:
     std::unique_ptr<AOSIROpt> IRO;

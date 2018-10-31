@@ -12,19 +12,21 @@ namespace dbt {
     unsigned int generations;
     float mutationRate;
     unsigned int populationSize;
+    unsigned int max, min;
   };
 
   class DNA {
     std::vector<int> Genes;
   public:
     DNA(std::vector<int> Genes) : Genes(std::move(Genes)) {}
+    std::vector<int> getGenes();
     void print();
   };
 
   class Population {
-    std::vector<std::unique_ptr<DNA>> Chromosomes;
     unsigned int Size; 
   public:
+    std::vector<std::unique_ptr<DNA>> Chromosomes;
     Population(unsigned int SizePop, unsigned int SizeGenes, InitPopType Type);
     void print();
   };

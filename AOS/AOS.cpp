@@ -33,6 +33,6 @@ AOS::AOS(const AOSParams &params) {
   }
 }
 
-void AOS::Run(llvm::Module *M) {
+void AOS::run(llvm::Module *M) {
   this->solver->Solve(M);
 }

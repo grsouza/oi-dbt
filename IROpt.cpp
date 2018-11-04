@@ -86,7 +86,6 @@ void dbt::IROpt::customOptimizeIRFunction(llvm::Module* M, std::vector<std::stri
 }
 
 void dbt::IROpt::optimizeIRFunction(llvm::Module *M, OptLevel Level, dbt::AOS& A) {
-  A.Run(M);
   // Lazy initialization
   if (Level == OptLevel::Basic) {
     if (!BasicPM) {

@@ -5,6 +5,7 @@
 
 #include "AOSIROpt.hpp"
 #include "CodeAnalyzer.hpp"
+#include "AOSLog.hpp"
 
 #include "llvm/IR/Module.h"
 #include "llvm/Bitcode/BitcodeWriter.h"
@@ -16,13 +17,15 @@ namespace dbt {
   protected:
     std::unique_ptr<AOSIROpt> IRO;
     std::unique_ptr<CodeAnalyzer> CA;
+    std::unique_ptr<AOSLog> LOG;
   public:
     AOSSolver() {
       IRO = llvm::make_unique<AOSIROpt>();
       CA = llvm::make_unique<CodeAnalyzer>();
+      LOG = std::make_unique<AOSLog>("AOSLog.out");
     }
     virtual ~AOSSolver() {}
-    virtual std::vector<std::string> Solve(llvm::Module *M) = 0;
+    virtual std::vector<std::string> Solve(llvm::Module*) = 0;
     virtual void Evaluate() = 0;
   };
-} // namespace dbt
+} //namespace dbt

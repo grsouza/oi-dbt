@@ -145,7 +145,7 @@ void Manager::runPipeline() {
       //  IRO->optimizeIRFunction(Module, IROpt::OptLevel::Basic, TheAOS);
       //else if (CustomOpts->count(EntryAddress) != 0)
       //  IRO->customOptimizeIRFunction(Module, (*CustomOpts)[EntryAddress]);
-      TheAOS.Run(Module);
+      TheAOS.run(Module);
 
       for (auto& F : *Module)
         for (auto& BB : F)

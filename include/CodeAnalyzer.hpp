@@ -17,6 +17,8 @@ namespace dbt {
   class CodeAnalyzer {
   public:
     CodeAnalyzer() {}
-    double getIPC(llvm::Module *M);
+    int getStaticSize(llvm::Module*); 
+    int getDynamicSize(llvm::Module*); 
+    double getIPC(llvm::Module*);
   };
 } //namespace dbt;

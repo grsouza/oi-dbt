@@ -49,7 +49,7 @@ Population::Population(unsigned int SizePop, unsigned int SizeGenes, InitPopType
     std::vector<uint16_t> CurGenes;
     if(Type == RANDOM) {
       for(int j = 0; j < SizeGenes; j++) {
-        CurGenes.push_back(getRandomNumber(OPT_MIN, OPT_MAX));
+        CurGenes.push_back(getRandomNumber(OPT_MIN, OPT_MAX+1));
       }
     }else if(Type == BEST10) {
       for(int j = 0; j < SizeGenes; j++) {
@@ -89,8 +89,10 @@ std::vector<std::string> GASolver::Solve(llvm::Module *M) {
   }
 
   LOG->population(Pop);
+  
   //IRO->optimizeIRFunction(M, Pop->Chromosomes[0]->getGenes(), AOSIROpt::OptLevel::Basic);
   //std::cout << CA->getSize(M) << std::endl;
+  
   return OptSequence;
 }
 

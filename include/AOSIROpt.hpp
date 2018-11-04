@@ -4,7 +4,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/LegacyPassManager.h"
 
-#define OPT_MIN 1 
+#define OPT_MIN 0 
 #define OPT_MAX 6 
   
 namespace dbt {

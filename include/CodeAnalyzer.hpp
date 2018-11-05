@@ -12,12 +12,13 @@
 #include <ctime>
 #include <cctype>
 #include <iostream>
+#include <memory>
 
 namespace dbt {
   class CodeAnalyzer {
   public:
     CodeAnalyzer() {}
-    int getStaticSize(llvm::Module*); 
+    int getStaticSize(std::shared_ptr<llvm::Module>); 
     int getDynamicSize(llvm::Module*); 
     double getIPC(llvm::Module*);
   };

@@ -4,6 +4,8 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/LegacyPassManager.h"
 
+#include <memory>
+
 #define OPT_MIN 0 
 #define OPT_MAX 6 
   
@@ -17,7 +19,7 @@ namespace dbt {
 
     enum OptLevel { Basic, Soft, Medium, Hard, Custom };
 
-    void optimizeIRFunction(llvm::Module*, std::vector<uint16_t>, OptLevel);
+    void optimizeIRFunction(std::shared_ptr<llvm::Module>, std::vector<uint16_t>, OptLevel);
     void customOptimizeIRFunction(llvm::Module*, std::vector<std::string>);
   };
 } //namespace dbt

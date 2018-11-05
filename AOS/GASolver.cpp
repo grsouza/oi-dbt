@@ -1,5 +1,12 @@
 #include "GASolver.hpp"
 
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Transforms/Utils/Cloning.h"
+#include "llvm/Transforms/Utils/ValueMapper.h"
+
+
 using namespace dbt;
 
 //===----------------------------------------------------------------------===//
@@ -18,12 +25,20 @@ std::vector<uint16_t> DNA::getGenes() {
   return Genes;
 }
 
+void DNA::calcFitness(std::shared_ptr<llvm::Module> M) {
+  IRO->optimizeIRFunction(M, Genes, AOSIROpt::OptLevel::Basic);
+  Fitness = CA->getStaticSize(M);
+}
+
 void DNA::toPrintInfo(std::ofstream &File) {
   File << "  ";
   for(int i = 0; i < Genes.size(); i++) {
-    File << Genes[i];
+    if(i != Genes.size() - 1)
+      File << Genes[i] << "-";
+    else  
+      File << Genes[i];
   }
-  File << "\n";
+  File << " | F: " << Fitness << "\n";
 }
 
 //===----------------------------------------------------------------------===//
@@ -39,6 +54,13 @@ void Population::toPrintInfo(std::ofstream &File) {
   File << "All chromosomes:" << std::endl;
   for(int i = 0; i < Chromosomes.size(); i++) {
     Chromosomes[i]->toPrintInfo(File);
+  }
+}
+
+void Population::calcFitness(llvm::Module* M) {
+  //Chromosomes[0]->calcFitness(M);
+  for(int i = 0; i < Chromosomes.size(); i++) {
+    Chromosomes[i]->calcFitness(std::move(llvm::CloneModule(*M)));
   }
 }
 
@@ -71,12 +93,11 @@ Population::Population(unsigned int SizePop, unsigned int SizeGenes, InitPopType
 
 std::vector<std::string> GASolver::Solve(llvm::Module *M) {
   std::vector<std::string> OptSequence;
-  
+ 
+  Mod = M;  
   TotalRegion++;
   LOG->newRegion(TotalRegion);
 
-  std::shared_ptr<Population> Pop;
-  
   switch(Params.searchSpace) { 
     case 1:
       Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::BASELINE);
@@ -88,12 +109,12 @@ std::vector<std::string> GASolver::Solve(llvm::Module *M) {
       Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::RANDOM);
   }
 
-  LOG->population(Pop);
-  
-  //IRO->optimizeIRFunction(M, Pop->Chromosomes[0]->getGenes(), AOSIROpt::OptLevel::Basic);
-  //std::cout << CA->getSize(M) << std::endl;
+  Evaluate();
   
   return OptSequence;
 }
 
-void GASolver::Evaluate() {}
+void GASolver::Evaluate() {
+  Pop->calcFitness(Mod);
+  LOG->population(Pop);
+}

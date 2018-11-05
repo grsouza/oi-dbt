@@ -13,7 +13,7 @@ std::string exec(const char* cmd) {
   return result;
 }
 
-int CodeAnalyzer::getStaticSize(llvm::Module *M) {
+int CodeAnalyzer::getStaticSize(std::shared_ptr<llvm::Module> M) {
   int Size = 0;
   for (auto& F : *M)
     for (auto& BB : F)

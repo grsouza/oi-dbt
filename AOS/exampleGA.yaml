@@ -19,7 +19,7 @@ roi: 396
 
 icStrategy: GA 
 icStrategyParams:
-  searchSpace: 2  # 0 - RANDOM; 1 - BASELINE; 2 - BEST10
+  searchSpace: 0  # 0 - RANDOM; 1 - BASELINE; 2 - BEST10
   generations: 100
   mutationRate: 0.3
   populationSize: 10

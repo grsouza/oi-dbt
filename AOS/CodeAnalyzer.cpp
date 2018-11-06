@@ -13,6 +13,18 @@ std::string exec(const char* cmd) {
   return result;
 }
 
+int CodeAnalyzer::getStaticSize(llvm::Module *M) {
+  int Size = 0;
+  for (auto& F : *M)
+    for (auto& BB : F)
+      Size += BB.size();
+  return Size;
+}
+
+int CodeAnalyzer::getDynamicSize(llvm::Module *M) {
+//like llvm-mca
+}
+
 double CodeAnalyzer::getIPC(llvm::Module *M) {
   std::string MCAResult;
   std::string ipc = "";
@@ -49,4 +61,3 @@ double CodeAnalyzer::getIPC(llvm::Module *M) {
   }
   return strtod(ipc.c_str(), nullptr);;
 }
-

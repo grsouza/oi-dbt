@@ -2,47 +2,95 @@
 
 using namespace dbt;
 
+//===----------------------------------------------------------------------===//
+//// Generic
+////===----------------------------------------------------------------------===//
+
 int getRandomNumber(int min, int max) {
-  return (rand() % max)-1;
+  return (rand() % max) + min;
 }
 
-void DNA::print() {
-  for(int i = 0; i < Genes.size(); i++) {
-    std::cout << Genes[i] << " ";
-  }
-  std::cout << "\n";
-}
+//===----------------------------------------------------------------------===//
+//// DNA 
+////===----------------------------------------------------------------------===//
 
-std::vector<int> DNA::getGenes() {
+std::vector<uint16_t> DNA::getGenes() {
   return Genes;
 }
 
-void Population::print() {
-  Chromosomes[0]->print();
+void DNA::toPrintInfo(std::ofstream &File) {
+  File << "  ";
+  for(int i = 0; i < Genes.size(); i++) {
+    File << Genes[i];
+  }
+  File << "\n";
+}
+
+//===----------------------------------------------------------------------===//
+//// Population 
+////===----------------------------------------------------------------------===//
+
+void Population::toPrintInfo(std::ofstream &File) {
+  File << std::endl;
+  File << "total generations: " << Generations << std::endl;
+  File << "average fitness: " << std::endl;
+  File << "total population: " << Chromosomes.size() << std::endl;
+  File << "mutation rate: " << std::endl;  
+  File << "All chromosomes:" << std::endl;
+  for(int i = 0; i < Chromosomes.size(); i++) {
+    Chromosomes[i]->toPrintInfo(File);
+  }
 }
 
 Population::Population(unsigned int SizePop, unsigned int SizeGenes, InitPopType Type) {
+  Generations = 0;
   Size = SizePop;
-  if(Type == RANDOM) {
-    for(int i = 0; i < SizePop; i++) {
-      std::vector<int> CurGenes;
+  for(int i = 0; i < SizePop; i++) {
+    std::vector<uint16_t> CurGenes;
+    if(Type == RANDOM) {
       for(int j = 0; j < SizeGenes; j++) {
-        CurGenes.push_back(getRandomNumber(OPTS_MIN_INDEX, OPTS_MAX_INDEX));
+        CurGenes.push_back(getRandomNumber(OPT_MIN, OPT_MAX));
       }
-      std::unique_ptr<DNA> CurChrom = std::make_unique<DNA>(std::move(CurGenes));
-      Chromosomes.push_back(std::move(CurChrom));
+    }else if(Type == BEST10) {
+      for(int j = 0; j < SizeGenes; j++) {
+        CurGenes.push_back(best10[getRandomNumber(0, best10.size())]);
+      }
+    }else {
+      for(int j = 0; j < SizeGenes; j++) {
+        CurGenes.push_back(baseline[getRandomNumber(0, baseline.size())]);
+      }
     }
+    std::unique_ptr<DNA> CurChrom = std::make_unique<DNA>(std::move(CurGenes));
+    Chromosomes.push_back(std::move(CurChrom));
   }
 }
+
+//===----------------------------------------------------------------------===//
+//// GASolver 
+////===----------------------------------------------------------------------===//
 
 std::vector<std::string> GASolver::Solve(llvm::Module *M) {
   std::vector<std::string> OptSequence;
   
-  Pop = llvm::make_unique<Population>(Params.populationSize, Params.max, InitPopType::RANDOM);
-  //Pop->print();
-  IRO->optimizeIRFunction(M, AOSIROpt::OptLevel::Basic, Pop->Chromosomes[0]->getGenes());
-  std::cout << CA->getIPC(M) << std::endl;
+  TotalRegion++;
+  LOG->newRegion(TotalRegion);
+
+  std::shared_ptr<Population> Pop;
   
+  switch(Params.searchSpace) { 
+    case 1:
+      Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::BASELINE);
+      break;
+    case 2:
+      Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::BEST10);
+      break;
+    default:
+      Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::RANDOM);
+  }
+
+  LOG->population(Pop);
+  //IRO->optimizeIRFunction(M, Pop->Chromosomes[0]->getGenes(), AOSIROpt::OptLevel::Basic);
+  //std::cout << CA->getSize(M) << std::endl;
   return OptSequence;
 }
 

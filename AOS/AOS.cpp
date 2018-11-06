@@ -32,6 +32,11 @@ AOS::AOS(const AOSParams &params) {
 	}
 }
 
+<<<<<<< HEAD
 void AOS::Run(llvm::Module *M) {
 	this->solver->Solve(M);
+=======
+void AOS::run(llvm::Module *M) {
+  this->solver->Solve(M);
+>>>>>>> branch_ga
 }

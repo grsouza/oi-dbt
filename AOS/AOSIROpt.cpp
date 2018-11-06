@@ -19,12 +19,12 @@ constexpr unsigned int str2int(const char* str, int h = 0) {
     return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
 }
 
-void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* FPM, std::vector<int> Passes) {
+void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* FPM, std::vector<uint16_t> Passes) {
   for (int PassIndex = 0; PassIndex < Passes.size(); PassIndex++) {
     switch (Passes[PassIndex]) {
-      case 0:
-        FPM->add(llvm::createInstructionCombiningPass());
-        break;
+      //case 0:
+      //  FPM->add(llvm::createInstructionCombiningPass());
+      //  break;
       case 1:
         FPM->add(llvm::createCFGSimplificationPass());
         break;
@@ -82,8 +82,7 @@ void dbt::AOSIROpt::customOptimizeIRFunction(llvm::Module* M, std::vector<std::s
     PM->run(F);*/
 }
 
-void dbt::AOSIROpt::optimizeIRFunction(llvm::Module *M, OptLevel Level, std::vector<int> Opts) {
-  // Lazy initialization
+void dbt::AOSIROpt::optimizeIRFunction(llvm::Module *M, std::vector<uint16_t> Opts, OptLevel Level) {
   if (Level == OptLevel::Basic) {
     if (!BasicPM) {
       BasicPM = std::make_unique<llvm::legacy::FunctionPassManager>(M);

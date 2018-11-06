@@ -3,40 +3,42 @@
 #include "AOSSolver.hpp"
 #include "AOSIROpt.hpp"
 #include "AOSLog.hpp"
+#include "SearchSpace.hpp"
 
 namespace dbt {
-  
   enum InitPopType{ RANDOM, BEST10, BASELINE }; //BASELINE - O1, O2, O3 AND 7 RANDOM
-  
+
   struct GASolverParams : public AOSSolverParams {
     unsigned int generations;
     float mutationRate;
     unsigned int populationSize;
+    uint8_t searchSpace;
     unsigned int max, min;
   };
 
   class DNA {
-    std::vector<int> Genes;
+    std::vector<uint16_t> Genes;
   public:
-    DNA(std::vector<int> Genes) : Genes(std::move(Genes)) {}
-    std::vector<int> getGenes();
-    void print();
+    DNA(std::vector<uint16_t> Genes) : Genes(std::move(Genes)) {}
+    std::vector<uint16_t> getGenes();
+    void toPrintInfo(std::ofstream &File);
   };
 
   class Population {
     unsigned int Size; 
-  public:
+    unsigned int Generations;
     std::vector<std::unique_ptr<DNA>> Chromosomes;
-    Population(unsigned int SizePop, unsigned int SizeGenes, InitPopType Type);
-    void print();
+  public:
+    Population(unsigned int, unsigned int, InitPopType);
+    void toPrintInfo(std::ofstream &File);
   };
 
   class GASolver : public AOSSolver {
+    int TotalRegion;
     const GASolverParams Params;
-    std::unique_ptr<Population> Pop;
   public:
-    GASolver(const GASolverParams &Params) : AOSSolver(), Params(Params) {}
-    std::vector<std::string> Solve(llvm::Module *M) override;
+    GASolver(const GASolverParams &Params) : AOSSolver(), Params(Params), TotalRegion(0) {}
+    std::vector<std::string> Solve(llvm::Module*) override;
     void Evaluate() override;
   };
 } // namespace dbt

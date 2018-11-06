@@ -1,6 +1,6 @@
 #include "DNA.hpp"
 
-std::vector<uint16_t> &DNA::getGenes() const { return Genes; }
+using namespace dbt;
 
 void DNA::calcFitness(std::shared_ptr<llvm::Module> M) {
   IRO->optimizeIRFunction(M, Genes, AOSIROpt::OptLevel::Basic);

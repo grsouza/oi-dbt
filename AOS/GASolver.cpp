@@ -43,11 +43,11 @@ Population::Population(unsigned int SizePop, unsigned int SizeGenes,
   Size = SizePop;
   for (int i = 0; i < SizePop; i++) {
     std::vector<uint16_t> CurGenes;
-    if (Type == RANDOM) {
+    if (Type == InitPopType::RANDOM) {
       for (int j = 0; j < SizeGenes; j++) {
         CurGenes.push_back(getRandomNumber(OPT_MIN, OPT_MAX + 1));
       }
-    } else if (Type == BEST10) {
+    } else if (Type == InitPopType::BEST10) {
       for (int j = 0; j < SizeGenes; j++) {
         CurGenes.push_back(best10[getRandomNumber(0, best10.size())]);
       }

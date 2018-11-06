@@ -25,10 +25,10 @@ public:
     return *this;
   }
 
-  std::vector<uint16_t> &getGenes() const;
+  inline const std::vector<uint16_t> &getGenes() const { return Genes; }
   void toPrintInfo(std::ofstream &File);
   void calcFitness(std::shared_ptr<llvm::Module> M);
-  int getFitness() const { return Fitness; }
+  inline int getFitness() const { return Fitness; }
 };
 
 }; // namespace dbt

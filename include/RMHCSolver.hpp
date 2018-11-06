@@ -4,6 +4,7 @@
 #include "DNA.hpp"
 
 namespace dbt {
+
 struct RMHCSolverParams : public AOSSolverParams {
   unsigned generations;
   float mutationRate;
@@ -19,7 +20,11 @@ public:
   void Evaluate() override;
 
 private:
-  DNA generateInitialDNA();
   DNA mutate(const DNA &D);
+
+  DNA generateInitialDNA(unsigned GeneSize, InitPopType Type);
+  std::vector<uint16_t> generateRandomGene(unsigned Size);
+  std::vector<uint16_t> generateBest10Gene(unsigned Size);
+  std::vector<uint16_t> generateBaselineGene(unsigned Size);
 };
 } // namespace dbt

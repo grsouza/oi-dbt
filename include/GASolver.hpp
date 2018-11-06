@@ -12,7 +12,6 @@
 #include <memory>
 
 namespace dbt {
-enum InitPopType { RANDOM, BEST10, BASELINE };
 
 struct GASolverParams : public AOSSolverParams {
   unsigned int generations;

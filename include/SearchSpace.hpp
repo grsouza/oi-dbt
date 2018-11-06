@@ -1,7 +1,9 @@
 #ifndef SEARCH_SPACE_HPP
 #define SEARCH_SPACE_HPP
 
-static std::vector<uint16_t> best10 = {1, 5};
-static std::vector<uint16_t> baseline = {1, 2, 3};
+#include "AOSPasses.hpp"
+
+static std::vector<uint16_t> best10 = {_NONE, LOOP_ROTATE, GVN, MEMCPYOPT, PRUNE_EH};
+static std::vector<uint16_t> baseline = {_NONE, MEM2REG, AA_EVAL};
 
 #endif

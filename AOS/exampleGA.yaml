@@ -18,9 +18,8 @@ roi: 396
 # SECTION 1: Iterative compilation
 
 icStrategy: GA 
-
 icStrategyParams:
-  searchSpace: 0
+  searchSpace: 0  # 0 - RANDOM; 1 - BASELINE; 2 - BEST10
   generations: 100
   mutationRate: 0.3
   populationSize: 10

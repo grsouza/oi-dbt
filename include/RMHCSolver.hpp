@@ -1,5 +1,7 @@
 #pragma once
+
 #include "AOSSolver.hpp"
+#include "DNA.hpp"
 
 namespace dbt {
 struct RMHCSolverParams : public AOSSolverParams {
@@ -8,16 +10,16 @@ struct RMHCSolverParams : public AOSSolverParams {
 };
 
 class RMHCSolver : public AOSSolver {
-  const RMHCSolverParams &params;
+  const RMHCSolverParams &Params;
 
 public:
-  RMHCSolver(const RMHCSolverParams &params);
+  RMHCSolver(const RMHCSolverParams &Params);
 
   std::vector<std::string> Solve(llvm::Module *M) override;
   void Evaluate() override;
 
 private:
-  std::vector<std::string> mutate(const std::vector<std::string> &sequence);
-  unsigned fitness(const std::vector<std::string> &sequence);
+  DNA generateInitialDNA();
+  DNA mutate(const DNA &D);
 };
 } // namespace dbt

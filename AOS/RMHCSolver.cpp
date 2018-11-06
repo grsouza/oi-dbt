@@ -2,8 +2,8 @@
 
 using namespace dbt;
 
-RMHCSolver::RMHCSolver(const RMHCSolverParams &params)
-    : AOSSolver(params), params(params) {}
+RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
+    : AOSSolver(), Params(Params) {}
 
 std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
 
@@ -16,59 +16,44 @@ std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
   // 4. If the fitness reaches the threshold return a the best evaluated DNA, if
   // not return step 2.
 
-  std::vector<std::string> bestEvaluated = {"instcombine",
-                                            "simplifycfg",
-                                            "reassociate",
-                                            "gvn",
-                                            "die",
-                                            "dce",
-                                            "instcombine",
-                                            "licm",
-                                            "memcpyopt",
-                                            "loop-unswitch",
-                                            "instcombine",
-                                            "indvars",
-                                            "loop-deletion",
-                                            "loop-predication",
-                                            "loop-unroll",
-                                            "simplifycfg",
-                                            "instcombine",
-                                            "licm",
-                                            "gvn"};
+  DNA BestEvaluated = generateInitialDNA();
+  BestEvaluated.calcFitness(std::shared_ptr<llvm::Module>(M));
 
-  unsigned bestEvaluatedFitness = fitness(bestEvaluated);
-  for (unsigned currentGeneration = 0; currentGeneration < params.generations;
-       ++currentGeneration) {
-    std::vector<std::string> newSequence = mutate(bestEvaluated);
-    unsigned newSequenceFitness = fitness(newSequence);
+  for (unsigned CurrentGeneration = 0; CurrentGeneration < Params.generations;
+       ++CurrentGeneration) {
+    DNA NewDNA = mutate(BestEvaluated);
+    NewDNA.calcFitness(std::shared_ptr<llvm::Module>(M));
 
-    if (newSequenceFitness > bestEvaluatedFitness) {
-      bestEvaluatedFitness = newSequenceFitness;
-      bestEvaluated = newSequence;
-    }
+    if (NewDNA.getFitness() > BestEvaluated.getFitness())
+      BestEvaluated = NewDNA;
+
+    // TODO: Check for threshold and break
   }
 
-  return bestEvaluated;
+  std::vector<std::string> Sequence;
+  return Sequence;
 }
 
 void RMHCSolver::Evaluate() {}
 
-std::vector<std::string>
-RMHCSolver::mutate(const std::vector<std::string> &sequence) {
-  unsigned idx1;
-  unsigned idx2;
-
-  do {
-    idx1 = rand() % sequence.size();
-    idx2 = rand() % sequence.size();
-  } while (idx1 == idx2);
-
-  std::vector<std::string> newSequence = sequence;
-  std::string tmp = newSequence[idx1];
-  newSequence[idx1] = newSequence[idx2];
-  newSequence[idx2] = tmp;
-
-  return newSequence;
+DNA RMHCSolver::generateInitialDNA() {
+  // TODO: implement
 }
 
-unsigned RMHCSolver::fitness(const std::vector<std::string> &sequence) {}
+DNA RMHCSolver::mutate(const DNA &D) {
+  std::vector<uint16_t> &CurGene = D.getGenes();
+  size_t Size = CurGene.size();
+  unsigned Idx1;
+  unsigned Idx2;
+
+  do {
+    Idx1 = rand() % Size;
+    Idx2 = rand() % Size;
+  } while (Idx1 == Idx2);
+
+  std::vector<uint16_t> NewSequence = CurGene;
+  uint16_t Tmp = NewSequence[Idx1];
+  NewSequence[Idx1] = NewSequence[Idx2];
+  NewSequence[Idx2] = Tmp;
+  return DNA(NewSequence);
+}

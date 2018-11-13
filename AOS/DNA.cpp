@@ -7,7 +7,7 @@ void DNA::calcFitness(std::shared_ptr<llvm::Module> M) {
   Fitness = CA->getStaticSize(M);
 }
 
-void DNA::toPrintInfo(std::ofstream &File) {
+void DNA::toPrintInfo(std::ofstream &File) const {
   File << "  ";
   for (int i = 0; i < Genes.size(); i++) {
     if (i != Genes.size() - 1)

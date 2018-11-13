@@ -26,7 +26,7 @@ public:
   }
 
   inline const std::vector<uint16_t> &getGenes() const { return Genes; }
-  void toPrintInfo(std::ofstream &File);
+  void toPrintInfo(std::ofstream &File) const;
   void calcFitness(std::shared_ptr<llvm::Module> M);
   inline int getFitness() const { return Fitness; }
 };

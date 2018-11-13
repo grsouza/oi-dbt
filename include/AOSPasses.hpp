@@ -3,13 +3,13 @@
 
 #define _NONE 0
 #define AA_EVAL 1
-#define DCE 2 
-#define SIMPLIFYCFG 3 
+#define DCE 2
+#define SIMPLIFYCFG 3
 #define REASSOCIATE 4
-#define GVN 5 
+#define GVN 5
 #define DIE 6
 #define MEM2REG 7
-#define LICM 8 
+#define LICM 8
 #define MEMCPYOPT 9
 #define LOOP_UNSWITCH 10
 #define INDVARS 11

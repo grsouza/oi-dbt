@@ -8,6 +8,8 @@
 
 namespace dbt {
   class Population;
+  class DNA;
+  
   class AOSLog {
     std::string FileName;
     std::ofstream File;
@@ -21,5 +23,6 @@ namespace dbt {
     }
     void newRegion(int); 
     void population(std::shared_ptr<Population>);
+    void dna(DNA *D);
   };
 } //namespace dbt;

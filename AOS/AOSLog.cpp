@@ -16,3 +16,10 @@ void AOSLog::population(std::shared_ptr<Population> P) {
   File << std::endl;
   File.close();
 }
+
+void AOSLog::dna(DNA *D) {
+  File.open(FileName, std::ostream::app);
+  D->toPrintInfo(File);
+  File << std::endl;
+  File.close();
+} 

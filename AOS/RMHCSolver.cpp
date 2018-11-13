@@ -1,74 +1,130 @@
 #include "RMHCSolver.hpp"
+#include "AOSLog.hpp"
+#include "SearchSpace.hpp"
+#include "llvm/IR/Constant.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Transforms/Utils/Cloning.h"
+#include "llvm/Transforms/Utils/ValueMapper.h"
 
 using namespace dbt;
 
-RMHCSolver::RMHCSolver(const RMHCSolverParams &params)
-    : AOSSolver(params), params(params) {}
+inline int getRandomNumber(int min, int max) { return (rand() % max) + min; }
+
+RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
+    : AOSSolver(), Params(Params), TotalRegion(0) {}
 
 std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
 
-  // TODO:
-  // 1. Choose an initial DNA as the current best-evaluated DNA and evaluate its
-  // fitness
-  // 2. Choose a locus at random to mutate on this DNA.
-  // 3. Evaluate the fitness of the new DNA. If it leads to better fitness, set
-  // it as the best-evaluated DNA, if not, give it up.
-  // 4. If the fitness reaches the threshold return a the best evaluated DNA, if
-  // not return step 2.
+  Mod = M;
+  LOG->newRegion(++TotalRegion);
 
-  std::vector<std::string> bestEvaluated = {"instcombine",
-                                            "simplifycfg",
-                                            "reassociate",
-                                            "gvn",
-                                            "die",
-                                            "dce",
-                                            "instcombine",
-                                            "licm",
-                                            "memcpyopt",
-                                            "loop-unswitch",
-                                            "instcombine",
-                                            "indvars",
-                                            "loop-deletion",
-                                            "loop-predication",
-                                            "loop-unroll",
-                                            "simplifycfg",
-                                            "instcombine",
-                                            "licm",
-                                            "gvn"};
+  BestEvaluated = generateInitialDNA(Params.Size, Params.SearchSpace);
+  BestEvaluated->calcFitness(std::move(llvm::CloneModule(*Mod)));
 
-  unsigned bestEvaluatedFitness = fitness(bestEvaluated);
-  for (unsigned currentGeneration = 0; currentGeneration < params.generations;
-       ++currentGeneration) {
-    std::vector<std::string> newSequence = mutate(bestEvaluated);
-    unsigned newSequenceFitness = fitness(newSequence);
+  for (unsigned CurGen = 0; CurGen < Params.Generations; ++CurGen) {
+    DNA *NewDNA = mutate(*BestEvaluated);
+    NewDNA->calcFitness(std::move(llvm::CloneModule(*Mod)));
 
-    if (newSequenceFitness > bestEvaluatedFitness) {
-      bestEvaluatedFitness = newSequenceFitness;
-      bestEvaluated = newSequence;
+    if (NewDNA->getFitness() > BestEvaluated->getFitness()) {
+      delete BestEvaluated;
+      BestEvaluated = NewDNA;
     }
+
+    // TODO: Check for threshold and break
   }
 
-  return bestEvaluated;
+  Evaluate();
+
+  std::vector<std::string> Sequence;
+  return Sequence;
 }
 
-void RMHCSolver::Evaluate() {}
+void RMHCSolver::Evaluate() { LOG->dna(BestEvaluated); }
 
-std::vector<std::string>
-RMHCSolver::mutate(const std::vector<std::string> &sequence) {
-  unsigned idx1;
-  unsigned idx2;
+DNA *RMHCSolver::generateInitialDNA(unsigned GeneSize,
+                                    InitPopType SearchSpace) {
+  switch (SearchSpace) {
+  case InitPopType::RANDOM:
+    return new DNA(generateRandomGene(GeneSize));
 
-  do {
-    idx1 = rand() % sequence.size();
-    idx2 = rand() % sequence.size();
-  } while (idx1 == idx2);
+  case InitPopType::BEST10:
+    return new DNA(generateBest10Gene(GeneSize));
 
-  std::vector<std::string> newSequence = sequence;
-  std::string tmp = newSequence[idx1];
-  newSequence[idx1] = newSequence[idx2];
-  newSequence[idx2] = tmp;
-
-  return newSequence;
+  case InitPopType::BASELINE:
+    return new DNA(generateBaselineGene(GeneSize));
+  }
 }
 
-unsigned RMHCSolver::fitness(const std::vector<std::string> &sequence) {}
+DNA *RMHCSolver::mutate(const DNA &D) {
+  const std::vector<uint16_t> &CurGene = D.getGenes();
+  size_t Size = CurGene.size();
+
+  MutationKind Kind = static_cast<MutationKind>(getRandomNumber(0, 4));
+
+  std::vector<uint16_t> NewGene = CurGene;
+
+  switch (Kind) {
+  case MutationKind::INSERT: {
+    NewGene.push_back(getRandomNumber(OPT_MIN, OPT_MAX + 1));
+    break;
+  }
+
+  case MutationKind::REMOVE: {
+    unsigned Idx = getRandomNumber(0, Size);
+    NewGene.erase(NewGene.begin() + Idx);
+    break;
+  }
+
+  case MutationKind::SWAP: {
+    unsigned Idx1;
+    unsigned Idx2;
+
+    do {
+      Idx1 = getRandomNumber(0, Size);
+      Idx2 = getRandomNumber(0, Size);
+    } while (Idx1 == Idx2);
+
+    uint16_t Tmp = NewGene[Idx1];
+    NewGene[Idx1] = NewGene[Idx2];
+    NewGene[Idx2] = Tmp;
+    break;
+  }
+  }
+
+  return new DNA(NewGene);
+}
+
+/** =================================
+ * GENE Generation
+ ===================================*/
+
+std::vector<uint16_t> RMHCSolver::generateRandomGene(unsigned Size) {
+  std::vector<uint16_t> Gene;
+  Gene.reserve(Size);
+
+  for (unsigned i = 0; i < Size; ++i)
+    Gene.push_back(getRandomNumber(OPT_MIN, OPT_MAX + 1));
+
+  return Gene;
+}
+
+std::vector<uint16_t> RMHCSolver::generateBest10Gene(unsigned Size) {
+  std::vector<uint16_t> Gene;
+  Gene.reserve(Size);
+
+  for (unsigned i = 0; i < Size; ++i)
+    Gene.push_back(best10[getRandomNumber(0, best10.size())]);
+
+  return Gene;
+}
+
+std::vector<uint16_t> RMHCSolver::generateBaselineGene(unsigned Size) {
+  std::vector<uint16_t> Gene;
+  Gene.reserve(Size);
+
+  for (unsigned i = 0; i < Size; ++i)
+    Gene.push_back(baseline[getRandomNumber(0, baseline.size())]);
+
+  return Gene;
+}

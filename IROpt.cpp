@@ -25,9 +25,9 @@ constexpr unsigned int str2int(const char* str, int h = 0) {
 void dbt::IROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* FPM, std::vector<std::string> PassesNames) {
   for (std::string PassName : PassesNames) {
     switch (str2int(PassName.c_str())) {
-      case str2int("instcombine"):
-        FPM->add(llvm::createInstructionCombiningPass());
-        break;
+      //case str2int("instcombine"):
+      //  FPM->add(llvm::createInstructionCombiningPass());
+      //  break;
       case str2int("simplifycfg"):
         FPM->add(llvm::createCFGSimplificationPass());
         break;
@@ -86,13 +86,12 @@ void dbt::IROpt::customOptimizeIRFunction(llvm::Module* M, std::vector<std::stri
 }
 
 void dbt::IROpt::optimizeIRFunction(llvm::Module *M, OptLevel Level, dbt::AOS& A) {
-  A.Run(M);
   // Lazy initialization
   if (Level == OptLevel::Basic) {
     if (!BasicPM) {
       BasicPM = std::make_unique<llvm::legacy::FunctionPassManager>(M);
       populateFuncPassManager(BasicPM.get(), 
-        {"instcombine", "simplifycfg", "reassociate", "gvn", "die", "dce", "instcombine", "licm", 
+        { "simplifycfg", "reassociate", "gvn", "die", "dce", "instcombine", "licm", 
         "memcpyopt", "loop-unswitch", "instcombine", "indvars", "loop-deletion", "loop-predication", "loop-unroll","simplifycfg", "instcombine", "licm", "gvn"});
       BasicPM->doInitialization();
     }

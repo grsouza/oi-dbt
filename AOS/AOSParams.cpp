@@ -8,19 +8,25 @@ void MappingTraits<GASolverParams>::mapping(IO &io, GASolverParams &params) {
   io.mapRequired("generations", params.generations);
   io.mapRequired("mutationRate", params.mutationRate);
   io.mapRequired("populationSize", params.populationSize);
+  io.mapRequired("searchSpace", params.searchSpace);
+  io.mapRequired("max", params.max);
+  io.mapRequired("min", params.min);
 }
 
 void MappingTraits<RMHCSolverParams>::mapping(IO &io,
                                               RMHCSolverParams &params) {
-  io.mapRequired("generations", params.generations);
-  io.mapRequired("mutationRate", params.mutationRate);
+  io.mapRequired("generations", params.Generations);
+  io.mapRequired("searchSpace", params.SearchSpace);
+  io.mapRequired("min", params.Min);
+  io.mapRequired("max", params.Max);
+  io.mapRequired("size", params.Size);
 }
 
 void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
   io.mapRequired("times", params.times);
   io.mapRequired("updateDatabase", params.updateDatabase);
   io.mapRequired("database", params.database);
-//   io.mapRequired("threshold", params.threshold);
+  //   io.mapRequired("threshold", params.threshold);
   io.mapRequired("max", params.max);
   io.mapRequired("min", params.min);
   io.mapRequired("onlyOnce", params.onlyOnce);
@@ -28,12 +34,12 @@ void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
   io.mapRequired("icStrategy", params.icStrategy.value);
 
   switch (params.icStrategy.value) {
-    case AOSParams::ICStrategy::Value::GA:
-      io.mapRequired("icStrategyParams", params.icStrategy.params.ga);
-      break;
-    case AOSParams::ICStrategy::Value::RMHC:
-      io.mapRequired("icStrategyParams", params.icStrategy.params.rmhc);
-      break;
+  case AOSParams::ICStrategy::Value::GA:
+    io.mapRequired("icStrategyParams", params.icStrategy.params.ga);
+    break;
+  case AOSParams::ICStrategy::Value::RMHC:
+    io.mapRequired("icStrategyParams", params.icStrategy.params.rmhc);
+    break;
   }
 
   io.mapRequired("retrieving", params.retrieve);

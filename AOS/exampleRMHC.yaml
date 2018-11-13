@@ -19,8 +19,11 @@ roi: 396
 
 icStrategy: RMHC
 icStrategyParams:
-  generations: 1000
-  mutationRate: 0.3
+  generations: 100
+  searchSpace: RANDOM # [RANDOM, BASELINE, BEST10]
+  size: 10
+  max: 10
+  min: 5
 
 objective: [ runtime ]
 

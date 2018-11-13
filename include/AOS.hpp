@@ -2,20 +2,18 @@
 
 #include "AOSParams.hpp"
 #include "AOSSolver.hpp"
+
 #include "llvm/IR/Module.h"
 
-// typedef std::vector<std::string> Threshold;
-
 namespace dbt {
-  class AOS {
-    AOSSolver *solver;
+class AOS {
+  AOSSolver *solver;
 
-  public:
-    static AOS create(const std::string &filePath);
-    void Run(llvm::Module *M);
+public:
+  static AOS create(const std::string &filePath);
+  void run(llvm::Module *);
 
-  private:
-    AOS(const AOSParams &params);
-  };
+private:
+  AOS(const AOSParams &params);
+};
 } // namespace dbt
-

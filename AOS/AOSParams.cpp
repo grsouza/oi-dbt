@@ -7,6 +7,7 @@ using namespace llvm::yaml;
 void MappingTraits<GASolverParams>::mapping(IO &io, GASolverParams &params) {
   io.mapRequired("generations", params.generations);
   io.mapRequired("mutationRate", params.mutationRate);
+  io.mapRequired("crossoverRate", params.mutationRate);
   io.mapRequired("populationSize", params.populationSize);
   io.mapRequired("searchSpace", params.searchSpace);
   io.mapRequired("max", params.max);

@@ -36,7 +36,7 @@ add_executable(oi-dbt main.cpp)
 
 install(TARGETS oi-dbt RUNTIME DESTINATION bin)
 
-target_link_libraries(oi-dbt
+target_link_libraries(oi-dbt PUBLIC "LLVM-7"
   papi 
   AOS
   RFT 

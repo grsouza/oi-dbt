@@ -15,7 +15,7 @@ namespace dbt {
     AOSLog(const std::string &FileName) : FileName(FileName) {
       File.open(FileName); 
       File << "//===----------------------------------------------------------------------===//\n";
-      File << "//// ADAPTATIVE SYSTEM OPTIMIZATIONS LOG #####" << std::endl; 
+      File << "//// ADAPTATIVE SYSTEM OPTIMIZATIONS LOG" << std::endl;
       File << "//===----------------------------------------------------------------------===//\n";
       File.close();
     }

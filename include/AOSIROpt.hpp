@@ -7,7 +7,7 @@
 #include <memory>
 
 #define OPT_MIN 0 
-#define OPT_MAX 6 
+#define OPT_MAX 24 
   
 namespace dbt {
   class AOSIROpt {

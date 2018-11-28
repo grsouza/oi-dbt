@@ -1,6 +1,6 @@
 #include "AOSIROpt.hpp"
 #include "llvm/Analysis/AliasAnalysis.h"
-//#include "llvm/LinkAllPasses.h"
+#include "llvm/LinkAllPasses.h"
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
@@ -44,55 +44,55 @@ void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* F
         FPM->add(llvm::createDeadInstEliminationPass());
         break;
       case MEM2REG: //mem2reg
-        //FPM->add(llvm::createPromoteMemoryToRegisterPass());
+        FPM->add(llvm::createPromoteMemoryToRegisterPass());
         break;
       case LICM: //licm
-        //FPM->add(llvm::createLICMPass());
+        FPM->add(llvm::createLICMPass());
         break;
       case MEMCPYOPT: //memcpyopt
-        //FPM->add(llvm::createMemCpyOptPass());
+        FPM->add(llvm::createMemCpyOptPass());
         break;
       case LOOP_UNSWITCH: //loop-unswitch
-        //FPM->add(llvm::createLoopUnswitchPass());
+        FPM->add(llvm::createLoopUnswitchPass());
         break;
       case INDVARS: //indvars
-        //FPM->add(llvm::createIndVarSimplifyPass());
+        FPM->add(llvm::createIndVarSimplifyPass());
         break;
       case LOOP_DELETION: //loop-deletion
-        //FPM->add(llvm::createLoopDeletionPass());
+        FPM->add(llvm::createLoopDeletionPass());
         break;
       case LOOP_PREDICATION: //loop-predication
-        //FPM->add(llvm::createLoopPredicationPass());
+        FPM->add(llvm::createLoopPredicationPass());
         break;
       case LOOP_UNROLL: //loop-unroll
-        //FPM->add(llvm::createSimpleLoopUnrollPass());
+        FPM->add(llvm::createSimpleLoopUnrollPass());
         break;
       case INSTCOMBINE: //instcombine
-        //FPM->add(llvm::createInstructionCombiningPass());
+        FPM->add(llvm::createInstructionCombiningPass());
         break;
       case ALWAYS_INLINE: //always-inline
         //FPM->add(llvm::createAlwaysInlinerLegacyPass());
         break;
       case DSE: //dse
-        //FPM->add(llvm::createDeadStoreEliminationPass());
+        FPM->add(llvm::createDeadStoreEliminationPass());
         break;
       case PRUNE_EH: //prune-eh
         //FPM->add(llvm::createPruneEHPass());
         break;
       case ADCE: //adce
-        //FPM->add(llvm::createAggressiveDCEPass());
+        FPM->add(llvm::createAggressiveDCEPass());
         break;
       case LOOP_IDIOM: //loop-idiom
-        //FPM->add(llvm::createLoopIdiomPass());
+        FPM->add(llvm::createLoopIdiomPass());
         break;
       case BASICAA: //basicaa
-        //FPM->add(llvm::createBasicAAWrapperPass());
+        FPM->add(llvm::createBasicAAWrapperPass());
         break;
       case DOMTREE: //domtree
-        //FPM->add(llvm::createPostDomTree());
+        FPM->add(llvm::createPostDomTree());
         break;
       case LOOP_ROTATE: //loop-rotate
-        //FPM->add(llvm::createLoopRotatePass());
+        FPM->add(llvm::createLoopRotatePass());
         break;
       case GLOBALOPT: //globalopt
         //FPM->add(llvm::createGlobalOptimizerPass());

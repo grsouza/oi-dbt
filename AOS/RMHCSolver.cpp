@@ -9,12 +9,10 @@
 
 using namespace dbt;
 
-inline int getRandomNumber(int min, int max) { return (rand() % max) + min; }
-
 RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
     : AOSSolver(), Params(Params), TotalRegion(0) {}
 
-std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
+void RMHCSolver::Solve(llvm::Module *M) {
 
   Mod = M;
   LOG->newRegion(++TotalRegion);
@@ -35,23 +33,20 @@ std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
   }
 
   Evaluate();
-
-  std::vector<std::string> Sequence;
-  return Sequence;
 }
 
 void RMHCSolver::Evaluate() { LOG->dna(BestEvaluated); }
 
 DNA *RMHCSolver::generateInitialDNA(unsigned GeneSize,
-                                    InitPopType SearchSpace) {
+                                    SearchSpaceType SearchSpace) {
   switch (SearchSpace) {
-  case InitPopType::RANDOM:
+  case SearchSpaceType::RANDOM:
     return new DNA(generateRandomGene(GeneSize));
 
-  case InitPopType::BEST10:
+  case SearchSpaceType::BEST10:
     return new DNA(generateBest10Gene(GeneSize));
 
-  case InitPopType::BASELINE:
+  case SearchSpaceType::BASELINE:
     return new DNA(generateBaselineGene(GeneSize));
   }
 }

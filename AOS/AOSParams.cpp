@@ -5,13 +5,13 @@ using namespace dbt;
 using namespace llvm::yaml;
 
 void MappingTraits<GASolverParams>::mapping(IO &io, GASolverParams &params) {
-  io.mapRequired("generations", params.generations);
-  io.mapRequired("mutationRate", params.mutationRate);
-  io.mapRequired("crossoverRate", params.mutationRate);
-  io.mapRequired("populationSize", params.populationSize);
-  io.mapRequired("searchSpace", params.searchSpace);
-  io.mapRequired("max", params.max);
-  io.mapRequired("min", params.min);
+  io.mapRequired("generations", params.Generations);
+  io.mapRequired("mutationRate", params.MutationRate);
+  io.mapRequired("crossoverRate", params.CrossoverRate);
+  io.mapRequired("searchSpace", params.SearchSpace);
+  io.mapRequired("populationSize", params.PopulationSize);
+  io.mapRequired("max", params.Max);
+  io.mapRequired("min", params.Min);
 }
 
 void MappingTraits<RMHCSolverParams>::mapping(IO &io,

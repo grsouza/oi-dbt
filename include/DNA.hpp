@@ -3,11 +3,21 @@
 #include "AOSIROpt.hpp"
 #include "AOSLog.hpp"
 #include "CodeAnalyzer.hpp"
+#include "AOSPasses.hpp"
+
 #include <memory>
 
 namespace dbt {
 
+inline int getRandomNumber(int min, int max) { return (rand() % max) + min; }
+
+inline float getRandomRate() {
+  float r = getRandomNumber(0, 10);
+  return (r /= 10);
+}
+
 class DNA {
+protected:
   std::unique_ptr<AOSIROpt> IRO;
   std::unique_ptr<CodeAnalyzer> CA;
   std::vector<uint16_t> Genes;
@@ -31,4 +41,17 @@ public:
   inline int getFitness() const { return Fitness; }
 };
 
-}; // namespace dbt
+
+class GADNA : public DNA {
+  float Probability;
+public:
+  GADNA(std::vector<uint16_t> Genes) : DNA(std::move(Genes)) {}
+
+  void normalize(int);
+  void mutate(float);
+  GADNA* crossover(GADNA*, int);
+  inline float getProbability() const { return Probability; }
+  inline int getLocus(int index) const { return Genes[index]; }
+  void toPrintInfo(std::ofstream &File) const;
+};
+} // namespace dbt

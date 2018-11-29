@@ -8,65 +8,46 @@
 #include "AOSIROpt.hpp"
 #include "AOSLog.hpp"
 #include "SearchSpace.hpp"
+#include "DNA.hpp"
+
 #include <memory>
 
 namespace dbt {
-  enum InitPopType{ RANDOM, BEST10, BASELINE };
-
   struct GASolverParams : public AOSSolverParams {
-    unsigned int generations;
-    float mutationRate;
-    float crossoverRate;
-    unsigned int populationSize;
-    uint8_t searchSpace;
-    unsigned int max, min;
-  };
-
-  class DNA {
-    std::unique_ptr<AOSIROpt> IRO;
-    std::unique_ptr<CodeAnalyzer> CA;
-    std::vector<uint16_t> Genes;
-    int Fitness;
-    double Probability;
-  public:
-    DNA(std::vector<uint16_t> Genes) : Genes(std::move(Genes)) {
-      IRO = llvm::make_unique<AOSIROpt>();
-      CA = llvm::make_unique<CodeAnalyzer>();
-    }
-    std::vector<uint16_t> getGenes();
-    void calcFitness(std::shared_ptr<llvm::Module>); 
-    void normalize(int);
-    DNA* crossover(DNA*, int);
-    void mutate(float);
-    int getFitness() { return Fitness; }
-    int getLocus(int index) { return Genes[index]; };
-    double getProbability() { return Probability; }
-    void toPrintInfo(std::ofstream&);
+    unsigned int Generations;
+    float MutationRate;
+    float CrossoverRate;
+    SearchSpaceType SearchSpace;
+    unsigned int PopulationSize;
+    unsigned int Max, Min;
   };
 
   class Population {
     unsigned SizeGenes; 
     unsigned Generations;
-    std::vector<std::unique_ptr<DNA>> Chromosomes;
+    std::vector<std::unique_ptr<GADNA>> Chromosomes;
     int Best;
   public:
-    Population(unsigned, unsigned, InitPopType);
-    void toPrintInfo(std::ofstream&);
+    Population(unsigned, unsigned, SearchSpaceType);
+    
     void calcFitness(llvm::Module*); 
     void normalize();
     int pickOne();
     void newPoputation(float, float);
     void searchBest(); 
+    
+    void toPrintInfo(std::ofstream&);
   };
 
   class GASolver : public AOSSolver {
     int TotalRegion;
-    llvm::Module *Mod;
+    llvm::Module *M;
     const GASolverParams Params;
-    std::shared_ptr<Population> Pop;
+    std::shared_ptr<Population> CurrentPop;
   public:
-    GASolver(const GASolverParams &Params) : AOSSolver(), Params(Params), TotalRegion(0) {}
-    std::vector<std::string> Solve(llvm::Module*) override;
+    GASolver(const GASolverParams &Params) : AOSSolver(), Params(Params), 
+      TotalRegion(0) {}
+    void Solve(llvm::Module*) override;
     void Evaluate() override;
   };
 } // namespace dbt

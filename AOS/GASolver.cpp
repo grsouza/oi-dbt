@@ -6,70 +6,38 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
 
+#include "DNA.hpp"
+
 using namespace dbt;
 
 #define INFINITE 100000 
 
 //===------------------------------------------------------------------------===//
-//// Generic
+//// Generic 
 ////===----------------------------------------------------------------------===//
 
-int getRandomNumber(int min, int max) { // min..max-1
-  return (rand() % max) + min;
-}
-
-float getRandomRate() {
-  float r = getRandomNumber(0, 10);
-  return (r /= 10);
-}
-
-//===------------------------------------------------------------------------===//
-//// DNA 
-////===----------------------------------------------------------------------===//
-
-std::vector<uint16_t> DNA::getGenes() {
-  return Genes;
-}
-
-void DNA::calcFitness(std::shared_ptr<llvm::Module> M) {
-  IRO->optimizeIRFunction(M, Genes, AOSIROpt::OptLevel::Basic);
-  Fitness = CA->getStaticSize(M);
-}
-
-void DNA::normalize(int Sum) {
-  Probability = ((double)Fitness)/Sum;
-  Probability *= 2;
-}
-
-DNA* DNA::crossover(DNA *parent, int index) {
-  std::vector<uint16_t> ChildGenes;
-  for(unsigned i = 0; i < index; i++) {
-    ChildGenes.push_back(Genes[i]);
+std::vector<uint16_t> generateRandomSpace(unsigned Size) {
+  std::vector<uint16_t> Space;
+  for(int j = 0; j < Size; j++) {
+    Space.push_back(getRandomNumber(OPT_MIN, OPT_MAX+1));
   }
-  for(unsigned i = index; i < Genes.size(); i++) {
-    ChildGenes.push_back(parent->getLocus(i));
-  }
-  return new DNA(std::move(ChildGenes));
+  return Space;
 }
 
-void DNA::mutate(float mutationRate) {
-  for(unsigned i = 0; i < Genes.size(); i++) {
-    float r = getRandomRate(); 
-    if(r < mutationRate) {
-      Genes[i] = getRandomNumber(OPT_MIN, OPT_MAX+1);
-    }
+std::vector<uint16_t> generateBest10Space(unsigned Size) {
+  std::vector<uint16_t> Space;
+  for(int j = 0; j < Size; j++) {
+    Space.push_back(best10[getRandomNumber(0, best10.size())]);
   }
+  return Space;
 }
 
-void DNA::toPrintInfo(std::ofstream &File) {
-  File << "  ";
-  for(int i = 0; i < Genes.size(); i++) {
-    if(i != Genes.size() - 1)
-      File << Genes[i] << "-";
-    else  
-      File << Genes[i];
+std::vector<uint16_t> generateBaselineSpace(unsigned Size) {
+  std::vector<uint16_t> Space;
+  for(int j = 0; j < Size; j++) {
+    Space.push_back(baseline[getRandomNumber(0, baseline.size())]);
   }
-  File << " | F: " << Fitness << " FN: " << std::fixed << Probability << "\n";
+  return Space;
 }
 
 //===------------------------------------------------------------------------===//
@@ -86,7 +54,6 @@ void Population::toPrintInfo(std::ofstream &File) {
   File << "total generations: " << Generations << std::endl;
   File << "average fitness: " << std::fixed << average << std::endl;
   File << "total population: " << Chromosomes.size() << std::endl;
-  File << "mutation rate: " << std::endl;  
   File << "best fitness: " << Best << std::endl;  
   File << "All chromosomes:" << std::endl;
   for(int i = 0; i < Chromosomes.size(); i++) {
@@ -100,32 +67,33 @@ void Population::calcFitness(llvm::Module* M) {
   }
 }
 
-Population::Population(unsigned int SizePop, unsigned int SizeG, InitPopType Type) {
+Population::Population(unsigned SizeP, unsigned SizeG, SearchSpaceType InitSpace) {
   Best = INFINITE;
   Generations = 0;
   SizeGenes = SizeG;
-  for(int i = 0; i < SizePop; i++) {
+
+  for(int i = 0; i < SizeP; i++) {
     std::vector<uint16_t> CurGenes;
-    if(Type == RANDOM) {
-      for(int j = 0; j < SizeGenes; j++) {
-        CurGenes.push_back(getRandomNumber(OPT_MIN, OPT_MAX+1));
-      }
-    }else if(Type == BEST10) {
-      for(int j = 0; j < SizeGenes; j++) {
-        CurGenes.push_back(best10[getRandomNumber(0, best10.size())]);
-      }
-    }else {
-      for(int j = 0; j < SizeGenes; j++) {
-        CurGenes.push_back(baseline[getRandomNumber(0, baseline.size())]);
-      }
+    switch(InitSpace) {
+      case SearchSpaceType::RANDOM:
+        CurGenes = std::move(generateRandomSpace(SizeGenes));
+        break;
+      case SearchSpaceType::BEST10:
+        CurGenes = std::move(generateBest10Space(SizeGenes));
+        break;
+      case SearchSpaceType::BASELINE:
+        CurGenes = std::move(generateBaselineSpace(SizeGenes));
+        break;
     }
-    std::unique_ptr<DNA> CurChrom = std::make_unique<DNA>(std::move(CurGenes));
+    
+    std::unique_ptr<GADNA> CurChrom = std::make_unique<GADNA>(std::move(CurGenes));
     Chromosomes.push_back(std::move(CurChrom));
   }
 }
 
 int Population::pickOne() {
   int index = 0;
+  
   float r = getRandomRate();
   while(r > 0) {
     if(index > Chromosomes.size()) {
@@ -135,36 +103,50 @@ int Population::pickOne() {
     r -= Chromosomes[index]->getProbability();
     index++;
   }
+  
   if(index > 0)
     index--;
   return index;
 }
 
 void Population::newPoputation(float mutationRate, float crossoverRate) {
-  std::vector<std::unique_ptr<DNA>> newChromosomes;
+  std::vector<std::unique_ptr<GADNA>> newChromosomes;
   int randomIndex, parentOne, parentTwo;
   while(newChromosomes.size() < Chromosomes.size()) {
+    //selec two parents
     parentOne = pickOne();
     parentTwo = pickOne();
     while(parentTwo == parentOne)
       parentTwo = pickOne();
-    
-    //float r = getRandomRate();
+    //crossover rate 
+    float r = getRandomRate();
     //if(r < crossoverRate) {
       randomIndex = getRandomNumber(0, SizeGenes);
-      std::unique_ptr<DNA> ChildOne(
+      //crossover 
+      std::unique_ptr<GADNA> ChildOne(
         Chromosomes[parentOne]->crossover(Chromosomes[parentTwo].get(), randomIndex));
-      std::unique_ptr<DNA> ChildTwo(
+      std::unique_ptr<GADNA> ChildTwo(
         Chromosomes[parentTwo]->crossover(Chromosomes[parentOne].get(), randomIndex));
+      //offspring mutate
       ChildOne->mutate(mutationRate);
       ChildTwo->mutate(mutationRate);
       newChromosomes.push_back(std::move(ChildOne));
       newChromosomes.push_back(std::move(ChildTwo));
     //}else {
-      //copy parent
+    //  //crossover 
+    //  std::unique_ptr<GADNA> ChildOne(
+    //    Chromosomes[parentOne]->crossover(Chromosomes[parentOne].get(), randomIndex));
+    //  std::unique_ptr<GADNA> ChildTwo(
+    //    Chromosomes[parentTwo]->crossover(Chromosomes[parentTwo].get(), randomIndex));
+    //  //offspring mutate
+    //  ChildOne->mutate(mutationRate);
+    //  ChildTwo->mutate(mutationRate);
+    //  //add new population
+    //  newChromosomes.push_back(std::move(ChildOne));
+    //  newChromosomes.push_back(std::move(ChildTwo));
     //}
   }
-  Chromosomes = std::move(newChromosomes);
+  //Chromosomes = std::move(newChromosomes);
   Generations++;
 }
 
@@ -175,7 +157,6 @@ void Population::searchBest() {
       index = i;
   }
   if(Best > Chromosomes[index]->getFitness()) {
-    std::cout << Best << " " << Chromosomes[index]->getFitness() << std::endl;
     Best = Chromosomes[index]->getFitness();
   }
 }
@@ -194,37 +175,25 @@ void Population::normalize() {
 //// GASolver 
 ////===----------------------------------------------------------------------===//
 
-std::vector<std::string> GASolver::Solve(llvm::Module *M) {
-  std::vector<std::string> OptSequence;
- 
-  Mod = M;  
-  TotalRegion++;
+void GASolver::Solve(llvm::Module *Mod) {
+  M = Mod;  
+  ++TotalRegion;
   LOG->newRegion(TotalRegion);
 
-  switch(Params.searchSpace) { 
-    case 1:
-      Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::BASELINE);
-      break;
-    case 2:
-      Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::BEST10);
-      break;
-    default:
-      Pop = std::make_shared<Population>(Params.populationSize, Params.max, InitPopType::RANDOM);
-  }
-
-  Evaluate();
+  CurrentPop = std::make_shared<Population>(Params.PopulationSize, Params.Max, 
+      Params.SearchSpace);
   
-  return OptSequence;
+  Evaluate();
 }
 
 void GASolver::Evaluate() {
-  int i = 0; 
-  while(i < 10) {
-    Pop->calcFitness(Mod);
-    Pop->searchBest();
-    Pop->normalize();
-    //LOG->population(Pop);
-    Pop->newPoputation(Params.mutationRate, Params.crossoverRate);
-    i++;
+  int it = 0; 
+  while(it < Params.Generations) {
+    CurrentPop->calcFitness(M);
+    CurrentPop->searchBest();
+    CurrentPop->normalize();
+    LOG->population(CurrentPop);
+    CurrentPop->newPoputation(Params.MutationRate, Params.CrossoverRate);
+    it++;
   }
 }

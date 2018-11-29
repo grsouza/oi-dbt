@@ -4,9 +4,10 @@
 using namespace dbt;
 using namespace llvm::yaml;
 
-void ScalarEnumerationTraits<InitPopType>::enumeration(IO &io,
-                                                       InitPopType &initPop) {
-  io.enumCase(initPop, "RANDOM", InitPopType::RANDOM);
-  io.enumCase(initPop, "BEST10", InitPopType::BEST10);
-  io.enumCase(initPop, "BASELINE", InitPopType::BASELINE);
+void ScalarEnumerationTraits<SearchSpaceType>::enumeration(IO &io,
+                                                       SearchSpaceType &InitSpace) {
+  io.enumCase(InitSpace, "RANDOM", SearchSpaceType::RANDOM);
+  io.enumCase(InitSpace, "BEST10", SearchSpaceType::BEST10);
+  io.enumCase(InitSpace, "BASELINE", SearchSpaceType::BASELINE);
 }
+

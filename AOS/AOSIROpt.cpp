@@ -25,9 +25,6 @@ constexpr unsigned int str2int(const char* str, int h = 0) {
 void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* FPM, std::vector<uint16_t> Passes) {
   for (int PassIndex = 0; PassIndex < Passes.size(); PassIndex++) {
     switch (Passes[PassIndex]) { 
-      case AA_EVAL: //aa-eval
-        //FPM->add(llvm::createAAEvalPass());
-        break;
       case DCE: //dce
         FPM->add(llvm::createDeadCodeEliminationPass());
         break;
@@ -70,14 +67,8 @@ void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* F
       case INSTCOMBINE: //instcombine
         FPM->add(llvm::createInstructionCombiningPass());
         break;
-      case ALWAYS_INLINE: //always-inline
-        //FPM->add(llvm::createAlwaysInlinerLegacyPass());
-        break;
       case DSE: //dse
         FPM->add(llvm::createDeadStoreEliminationPass());
-        break;
-      case PRUNE_EH: //prune-eh
-        //FPM->add(llvm::createPruneEHPass());
         break;
       case ADCE: //adce
         FPM->add(llvm::createAggressiveDCEPass());
@@ -94,38 +85,38 @@ void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* F
       case LOOP_ROTATE: //loop-rotate
         FPM->add(llvm::createLoopRotatePass());
         break;
-      case GLOBALOPT: //globalopt
-        //FPM->add(llvm::createGlobalOptimizerPass());
-        break;
       case _NONE:
         break;
+      //case GLOBALOPT: //globalopt
+      //  FPM->add(llvm::createGlobalOptimizerPass());
+      //  break;
+      //case PRUNE_EH: //prune-eh
+      //  FPM->add(llvm::createPruneEHPass());
+      //  break;
+      //case ALWAYS_INLINE: //always-inline
+      //  FPM->add(llvm::createAlwaysInlinerLegacyPass());
+      //  break;
+      //case AA_EVAL: //aa-eval
+      //  FPM->add(llvm::createAAEvalPass());
+      //  break;
       default:
         std::cerr << "Trying to use an invalid optimization pass!\n";
         exit(1);
         break;
     }
   }
-  //std::cerr << "\n";
 }
 
 void dbt::AOSIROpt::customOptimizeIRFunction(llvm::Module* M, std::vector<std::string> Opts) {
-  /*std::cerr << "Custom opt " << Opts[1] << "\n";
-  auto PM = std::make_unique<llvm::legacy::FunctionPassManager>(M);
-  populateFuncPassManager(PM.get(), Opts);
-  PM->doInitialization();
-  for (auto &F : *M)
-    PM->run(F);*/
 }
 
 void dbt::AOSIROpt::optimizeIRFunction(std::shared_ptr<llvm::Module> M, std::vector<uint16_t> Opts, OptLevel Level) {
   llvm::Module *Mod = M.get();
   std::unique_ptr<llvm::legacy::FunctionPassManager> BPM;
   if (Level == OptLevel::Basic) {
-    //if (!BasicPM) {
-      BPM = std::make_unique<llvm::legacy::FunctionPassManager>(Mod);
-      populateFuncPassManager(BPM.get(), Opts);
-      BPM->doInitialization();
-    //}
+    BPM = std::make_unique<llvm::legacy::FunctionPassManager>(Mod);
+    populateFuncPassManager(BPM.get(), Opts);
+    BPM->doInitialization();
     for (auto &F : *Mod)
       BPM->run(F);
   }

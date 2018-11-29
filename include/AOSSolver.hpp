@@ -20,7 +20,7 @@ protected:
 public:
   AOSSolver() { LOG = std::make_unique<AOSLog>("AOSLog.out"); }
   virtual ~AOSSolver() {}
-  virtual std::vector<std::string> Solve(llvm::Module *) = 0;
+  virtual void Solve(llvm::Module *) = 0;
   virtual void Evaluate() = 0;
 };
 } // namespace dbt

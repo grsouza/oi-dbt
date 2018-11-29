@@ -10,16 +10,15 @@ using namespace llvm::yaml;
 
 namespace dbt {
 
-enum class InitPopType { RANDOM, BEST10, BASELINE };
+enum class SearchSpaceType { RANDOM, BEST10, BASELINE };
 
-static std::vector<uint16_t> best10 = {_NONE, LOOP_ROTATE, GVN, MEMCPYOPT,
-                                       PRUNE_EH};
-static std::vector<uint16_t> baseline = {_NONE, MEM2REG, AA_EVAL};
+static std::vector<uint16_t> best10 = {_NONE, LOOP_ROTATE, GVN, MEMCPYOPT};
+static std::vector<uint16_t> baseline = {_NONE, MEM2REG};
 
 } // namespace dbt
 
-template <> struct llvm::yaml::ScalarEnumerationTraits<dbt::InitPopType> {
-  static void enumeration(llvm::yaml::IO &io, dbt::InitPopType &InitPop);
+template <> struct llvm::yaml::ScalarEnumerationTraits<dbt::SearchSpaceType> {
+  static void enumeration(llvm::yaml::IO &io, dbt::SearchSpaceType &InitSpace);
 };
 
 #endif

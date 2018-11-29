@@ -1,30 +1,35 @@
 #ifndef AOS_PASSES
 #define AOS_PASSES
 
+#define OPT_MIN 0 
+#define OPT_MAX 20 
+
 #define _NONE 0
-#define AA_EVAL 1
-#define DCE 2
-#define SIMPLIFYCFG 3
-#define REASSOCIATE 4
-#define GVN 5
-#define DIE 6
-#define MEM2REG 7
-#define LICM 8
-#define MEMCPYOPT 9
-#define LOOP_UNSWITCH 10
-#define INDVARS 11
-#define LOOP_DELETION 12
-#define LOOP_PREDICATION 13
-#define LOOP_UNROLL 14
-#define INSTCOMBINE 15
-#define ALWAYS_INLINE 16
-#define DSE 17
-#define PRUNE_EH 18
-#define ADCE 19
-#define LOOP_IDIOM 20
-#define BASICAA 21
-#define DOMTREE 22
-#define LOOP_ROTATE 23
-#define GLOBALOPT 24
+#define DCE 1
+#define SIMPLIFYCFG 2
+#define REASSOCIATE 3
+#define GVN 4
+#define DIE 5
+#define MEM2REG 6
+#define LICM 7
+#define MEMCPYOPT 8
+#define LOOP_UNSWITCH 9
+#define INDVARS 10
+#define LOOP_DELETION 11
+#define LOOP_PREDICATION 12
+#define LOOP_UNROLL 13
+#define INSTCOMBINE 14
+#define DSE 15
+#define ADCE 16
+#define LOOP_IDIOM 17
+#define BASICAA 18
+#define DOMTREE 19
+#define LOOP_ROTATE 20
+
+/* Passes with troubles
+ * #define AA_EVAL 
+ * #define ALWAYS_INLINE 
+ * #define PRUNE_EH 
+ * #define GLOBALOPT */ 
 
 #endif

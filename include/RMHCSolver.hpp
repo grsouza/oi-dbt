@@ -9,7 +9,7 @@ namespace dbt {
 struct RMHCSolverParams : public AOSSolverParams {
   unsigned Size, Max, Min;
   unsigned Generations;
-  InitPopType SearchSpace;
+  SearchSpaceType SearchSpace;
 };
 
 class RMHCSolver : public AOSSolver {
@@ -22,13 +22,13 @@ public:
   RMHCSolver(const RMHCSolverParams &Params);
   ~RMHCSolver() { delete BestEvaluated; }
 
-  std::vector<std::string> Solve(llvm::Module *M) override;
+  void Solve(llvm::Module *M) override;
   void Evaluate() override;
 
 private:
   DNA *mutate(const DNA &D);
 
-  DNA *generateInitialDNA(unsigned GeneSize, InitPopType SearchSpace);
+  DNA *generateInitialDNA(unsigned GeneSize, SearchSpaceType SearchSpace);
   std::vector<uint16_t> generateRandomGene(unsigned Size);
   std::vector<uint16_t> generateBest10Gene(unsigned Size);
   std::vector<uint16_t> generateBaselineGene(unsigned Size);

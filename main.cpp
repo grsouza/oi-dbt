@@ -12,6 +12,8 @@
 #include <memory>
 
 clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file", "");
+clarg::argBool LockModeFlag("-lockmode", "Blocks the emulator when a region encountered until it is compiled");
+
 clarg::argString RFTFlag("-rft", "Region Formation Technique (net)",
                          "netplus-e-r");
 clarg::argInt HotnessFlag("-hot", "Hotness threshold for the RFTs", 50);
@@ -194,6 +196,10 @@ int main(int argc, char **argv) {
 
   dbt::AOS A = dbt::AOS::create(AOSFlag.get_value());
   dbt::Manager TheManager(M.getDataMemOffset(), M, A, VerboseFlag.was_set());
+
+  if (LockModeFlag.get_value() == true) {
+    TheManager.setLockMode();
+  }
 
   if (LoadRegionsFlag.was_set() || LoadOIFlag.was_set() ||
       WholeCompilationFlag.was_set())

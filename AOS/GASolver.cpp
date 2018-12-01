@@ -45,14 +45,8 @@ std::vector<uint16_t> generateBaselineSpace(unsigned Size) {
 ////===----------------------------------------------------------------------===//
 
 void Population::toPrintInfo(std::ofstream &File) {
-  double average = 0;
-  for(int i = 0; i < Chromosomes.size(); i++) {
-    average += Chromosomes[i]->getProbability();
-  }
-  average = (average/Chromosomes.size())*100;
   File << std::endl;
   File << "total generations: " << Generations << std::endl;
-  File << "average fitness: " << std::fixed << average << std::endl;
   File << "total population: " << Chromosomes.size() << std::endl;
   File << "best fitness: " << Best << std::endl;  
   File << "All chromosomes:" << std::endl;
@@ -95,7 +89,7 @@ int Population::pickOne() {
   int index = 0;
   
   float r = getRandomRate();
-  while(r > 0) {
+  while(r > 0 || index == Chromosomes.size()) {
     if(index > Chromosomes.size()) {
       std::cerr << "pickOne trying to access invalid position of population!\n";
       exit(1);    
@@ -106,6 +100,7 @@ int Population::pickOne() {
   
   if(index > 0)
     index--;
+  
   return index;
 }
 
@@ -113,40 +108,24 @@ void Population::newPoputation(float mutationRate, float crossoverRate) {
   std::vector<std::unique_ptr<GADNA>> newChromosomes;
   int randomIndex, parentOne, parentTwo;
   while(newChromosomes.size() < Chromosomes.size()) {
-    //selec two parents
+    //select two parents
     parentOne = pickOne();
     parentTwo = pickOne();
-    while(parentTwo == parentOne)
-      parentTwo = pickOne();
     //crossover rate 
     float r = getRandomRate();
-    //if(r < crossoverRate) {
-      randomIndex = getRandomNumber(0, SizeGenes);
-      //crossover 
-      std::unique_ptr<GADNA> ChildOne(
+    randomIndex = getRandomNumber(0, SizeGenes);
+    //crossover 
+    std::unique_ptr<GADNA> ChildOne(
         Chromosomes[parentOne]->crossover(Chromosomes[parentTwo].get(), randomIndex));
-      std::unique_ptr<GADNA> ChildTwo(
+    std::unique_ptr<GADNA> ChildTwo(
         Chromosomes[parentTwo]->crossover(Chromosomes[parentOne].get(), randomIndex));
-      //offspring mutate
-      ChildOne->mutate(mutationRate);
-      ChildTwo->mutate(mutationRate);
-      newChromosomes.push_back(std::move(ChildOne));
-      newChromosomes.push_back(std::move(ChildTwo));
-    //}else {
-    //  //crossover 
-    //  std::unique_ptr<GADNA> ChildOne(
-    //    Chromosomes[parentOne]->crossover(Chromosomes[parentOne].get(), randomIndex));
-    //  std::unique_ptr<GADNA> ChildTwo(
-    //    Chromosomes[parentTwo]->crossover(Chromosomes[parentTwo].get(), randomIndex));
-    //  //offspring mutate
-    //  ChildOne->mutate(mutationRate);
-    //  ChildTwo->mutate(mutationRate);
-    //  //add new population
-    //  newChromosomes.push_back(std::move(ChildOne));
-    //  newChromosomes.push_back(std::move(ChildTwo));
-    //}
+    //offspring mutate
+    ChildOne->mutate(mutationRate);
+    ChildTwo->mutate(mutationRate);
+    newChromosomes.push_back(std::move(ChildOne));
+    newChromosomes.push_back(std::move(ChildTwo));
   }
-  //Chromosomes = std::move(newChromosomes);
+  Chromosomes = std::move(newChromosomes);
   Generations++;
 }
 

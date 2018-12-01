@@ -72,6 +72,7 @@ namespace dbt {
       float AvgOptCodeSize = 0;
 
       bool VerboseOutput = false;
+      bool LockMode = false;
 
 			std::unordered_map<uint32_t, llvm::Module*> ModulesLoaded;
       bool IsToLoadRegions = false;
@@ -128,6 +129,14 @@ namespace dbt {
       void setCustomOpts(std::unordered_map<uint32_t, std::vector<std::string>>* COpts) {
         CustomOpts = COpts;
         OptMode = Custom;
+      }
+
+      void setLockMode() {
+        LockMode = true;
+      }
+
+      bool getLockMode() {
+        return LockMode;
       }
 
       unsigned getCompiledRegions (void){

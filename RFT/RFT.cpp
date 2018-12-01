@@ -4,6 +4,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include "manager.hpp"
+
 unsigned Total = 0;
 void dbt::RFT::insertInstruction(uint32_t Addrs, uint32_t Opcode) {
   if (Total > RegionLimitSize) {
@@ -42,6 +44,11 @@ bool dbt::RFT::finishRegionFormation() {
     if (Added) {
       Total += OIRegion.size();
       AlreadyCompiled.insert(RecordingEntry);
+    }
+    
+    if(TheManager.getLockMode()) {
+      uint32_t EntryAddress = RecordingEntry;
+      while(!TheManager.isNativeRegionEntry(EntryAddress));
     }
   }
   OIRegion.clear();

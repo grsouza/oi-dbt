@@ -30,7 +30,7 @@ void DNA::toPrintInfo(std::ofstream &File) const {
 
 void GADNA::normalize(int Sum) {
   Probability = ((double)Fitness)/Sum;
-  Probability *= 2;
+  Probability = 1.0 - Probability;
 }
 
 GADNA* GADNA::crossover(GADNA *parent, int index) {

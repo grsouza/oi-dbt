@@ -117,7 +117,8 @@ void dbt::AOSIROpt::optimizeIRFunction(std::shared_ptr<llvm::Module> M, std::vec
     BPM = std::make_unique<llvm::legacy::FunctionPassManager>(Mod);
     populateFuncPassManager(BPM.get(), Opts);
     BPM->doInitialization();
-    for (auto &F : *Mod)
+    for (auto &F : *Mod) {
       BPM->run(F);
+    }
   }
 }

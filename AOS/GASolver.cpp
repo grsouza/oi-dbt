@@ -48,7 +48,9 @@ void Population::toPrintInfo(std::ofstream &File) {
   File << std::endl;
   File << "total generations: " << Generations << std::endl;
   File << "total population: " << Chromosomes.size() << std::endl;
-  File << "best fitness: " << Best << std::endl;  
+  File << "best fitness: " << Best->getFitness() << std::endl;  
+  File << "best chromosome: " << std::endl;  
+  Best->toPrintInfo(File);
   File << "All chromosomes:" << std::endl;
   for(int i = 0; i < Chromosomes.size(); i++) {
     Chromosomes[i]->toPrintInfo(File);
@@ -62,7 +64,7 @@ void Population::calcFitness(llvm::Module* M) {
 }
 
 Population::Population(unsigned SizeP, unsigned SizeG, SearchSpaceType InitSpace) {
-  Best = INFINITE;
+  Best = nullptr;
   Generations = 0;
   SizeGenes = SizeG;
 
@@ -111,19 +113,40 @@ void Population::newPoputation(float mutationRate, float crossoverRate) {
     //select two parents
     parentOne = pickOne();
     parentTwo = pickOne();
+    for(unsigned i = 0; i < 5; i++) {
+      if(parentTwo != parentOne)
+        break;
+      parentTwo = pickOne();
+    }
     //crossover rate 
     float r = getRandomRate();
-    randomIndex = getRandomNumber(0, SizeGenes);
-    //crossover 
-    std::unique_ptr<GADNA> ChildOne(
-        Chromosomes[parentOne]->crossover(Chromosomes[parentTwo].get(), randomIndex));
-    std::unique_ptr<GADNA> ChildTwo(
-        Chromosomes[parentTwo]->crossover(Chromosomes[parentOne].get(), randomIndex));
-    //offspring mutate
-    ChildOne->mutate(mutationRate);
-    ChildTwo->mutate(mutationRate);
-    newChromosomes.push_back(std::move(ChildOne));
-    newChromosomes.push_back(std::move(ChildTwo));
+    if(r < crossoverRate) {
+      randomIndex = getRandomNumber(0, SizeGenes);
+      //crossover 
+      std::unique_ptr<GADNA> ChildOne(
+          Chromosomes[parentOne]->crossover(Chromosomes[parentTwo].get(), randomIndex));
+      std::unique_ptr<GADNA> ChildTwo(
+          Chromosomes[parentTwo]->crossover(Chromosomes[parentOne].get(), randomIndex));
+      //offspring mutate
+      ChildOne->mutate(mutationRate);
+      ChildTwo->mutate(mutationRate);
+      //adds to the new population
+      newChromosomes.push_back(std::move(ChildOne));
+      newChromosomes.push_back(std::move(ChildTwo));
+    }else {
+      randomIndex = getRandomNumber(0, SizeGenes);
+      //crossover 
+      std::unique_ptr<GADNA> ChildOne(
+          Chromosomes[parentOne]->crossover(Chromosomes[parentOne].get(), randomIndex));
+      std::unique_ptr<GADNA> ChildTwo(
+          Chromosomes[parentTwo]->crossover(Chromosomes[parentTwo].get(), randomIndex));
+      //offspring mutate
+      ChildOne->mutate(mutationRate);
+      ChildTwo->mutate(mutationRate);
+      //adds to the new population
+      newChromosomes.push_back(std::move(ChildOne));
+      newChromosomes.push_back(std::move(ChildTwo));
+    }
   }
   Chromosomes = std::move(newChromosomes);
   Generations++;
@@ -135,8 +158,10 @@ void Population::searchBest() {
     if(Chromosomes[i]->getFitness() < Chromosomes[index]->getFitness())
       index = i;
   }
-  if(Best > Chromosomes[index]->getFitness()) {
-    Best = Chromosomes[index]->getFitness();
+  if(Best != nullptr && Best->getFitness() > Chromosomes[index]->getFitness()) {
+    Best = Chromosomes[index].get();
+  }else {
+    Best = Chromosomes[index].get();
   }
 }
 
@@ -162,17 +187,22 @@ void GASolver::Solve(llvm::Module *Mod) {
   CurrentPop = std::make_shared<Population>(Params.PopulationSize, Params.Max, 
       Params.SearchSpace);
   
+  CurrentPop->calcFitness(M);
+  CurrentPop->searchBest();
+  CurrentPop->normalize();
+  LOG->population(CurrentPop);
+  
   Evaluate();
 }
 
 void GASolver::Evaluate() {
   int it = 0; 
-  while(it < Params.Generations) {
+  while(it <= Params.Generations) {
+    CurrentPop->newPoputation(Params.MutationRate, Params.CrossoverRate);
     CurrentPop->calcFitness(M);
     CurrentPop->searchBest();
     CurrentPop->normalize();
     LOG->population(CurrentPop);
-    CurrentPop->newPoputation(Params.MutationRate, Params.CrossoverRate);
     it++;
   }
 }

@@ -26,7 +26,7 @@ namespace dbt {
     unsigned SizeGenes; 
     unsigned Generations;
     std::vector<std::unique_ptr<GADNA>> Chromosomes;
-    int Best;
+    GADNA *Best;
   public:
     Population(unsigned, unsigned, SearchSpaceType);
     

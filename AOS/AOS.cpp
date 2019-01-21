@@ -1,6 +1,5 @@
 #include "AOS.hpp"
 #include "AOSParams.hpp"
-#include "RegionRepresentation.hpp"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/YAMLTraits.h"
 
@@ -36,7 +35,7 @@ AOS::AOS(const AOSParams &params) {
 void AOS::run(llvm::Module *M) {
 
   std::cout << "====== REGION DNA ======" << std::endl
-            << GetRegionRepresentation(M) << std::endl;
+            << CodeAnalyzer::getSymbolicRepresentation(M) << std::endl;
 
   this->solver->Solve(M);
 }

@@ -30,8 +30,7 @@ add_library(dbt
   machine.cpp 
   manager.cpp 
   syscallIREmitter.cpp 
-  syscall.cpp
-  RegionRepresentation.cpp)
+  syscall.cpp)
 
 add_executable(oi-dbt main.cpp)
 

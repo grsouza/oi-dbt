@@ -1,6 +1,6 @@
 #include "AOSIROpt.hpp"
 #include "llvm/Analysis/AliasAnalysis.h"
-#include "llvm/LinkAllPasses.h"
+// #include "llvm/LinkAllPasses.h"
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
@@ -41,7 +41,7 @@ void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* F
         FPM->add(llvm::createDeadInstEliminationPass());
         break;
       case MEM2REG: //mem2reg
-        FPM->add(llvm::createPromoteMemoryToRegisterPass());
+//        FPM->add(llvm::createPromoteMemoryToRegisterPass());
         break;
       case LICM: //licm
         FPM->add(llvm::createLICMPass());
@@ -65,7 +65,7 @@ void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* F
         FPM->add(llvm::createSimpleLoopUnrollPass());
         break;
       case INSTCOMBINE: //instcombine
-        FPM->add(llvm::createInstructionCombiningPass());
+//        FPM->add(llvm::createInstructionCombiningPass());
         break;
       case DSE: //dse
         FPM->add(llvm::createDeadStoreEliminationPass());
@@ -77,10 +77,10 @@ void dbt::AOSIROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* F
         FPM->add(llvm::createLoopIdiomPass());
         break;
       case BASICAA: //basicaa
-        FPM->add(llvm::createBasicAAWrapperPass());
+//        FPM->add(llvm::createBasicAAWrapperPass());
         break;
       case DOMTREE: //domtree
-        FPM->add(llvm::createPostDomTree());
+//        FPM->add(llvm::createPostDomTree());
         break;
       case LOOP_ROTATE: //loop-rotate
         FPM->add(llvm::createLoopRotatePass());

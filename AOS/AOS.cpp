@@ -1,9 +1,21 @@
 #include "AOS.hpp"
 #include "AOSParams.hpp"
+
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/YAMLTraits.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/FormattedStream.h"
+#include "llvm/ADT/SmallString.h"
+#include "llvm/Support/Format.h"
+#include "llvm/Support/raw_ostream.h"
+
+#include "AOSDataset.hpp"
 
 #include <iostream>
+#include <string>
+
+using llvm::yaml::Output;
 
 using namespace dbt;
 
@@ -33,9 +45,12 @@ AOS::AOS(const AOSParams &params) {
 }
 
 void AOS::run(llvm::Module *M) {
+  auto Obj = this->solver->Solve(M);
+  
+  std::string Text;
+  llvm::raw_string_ostream Stream(Text);
+  llvm::yaml::Output yout(Stream);
+  yout << *Obj;
 
-  std::cout << "====== REGION DNA ======" << std::endl
-            << CodeAnalyzer::getSymbolicRepresentation(M) << std::endl;
-
-  this->solver->Solve(M);
+  std::cout << Stream.str() << std::endl;
 }

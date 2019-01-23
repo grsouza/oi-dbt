@@ -3,6 +3,7 @@
 #include "AOSSolver.hpp"
 #include "DNA.hpp"
 #include "SearchSpace.hpp"
+#include "AOSDataset.hpp"
 
 namespace dbt {
 
@@ -22,7 +23,7 @@ public:
   RMHCSolver(const RMHCSolverParams &Params);
   ~RMHCSolver() { delete BestEvaluated; }
 
-  void Solve(llvm::Module *M) override;
+  DatasetFields* Solve(llvm::Module *M) override;
   void Evaluate() override;
 
 private:

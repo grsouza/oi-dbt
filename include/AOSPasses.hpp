@@ -26,10 +26,4 @@
 #define DOMTREE 19
 #define LOOP_ROTATE 20
 
-/* Passes with troubles
- * #define AA_EVAL 
- * #define ALWAYS_INLINE 
- * #define PRUNE_EH 
- * #define GLOBALOPT */ 
-
 #endif

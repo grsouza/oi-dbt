@@ -5,7 +5,6 @@
 #include "llvm/IR/LegacyPassManager.h"
 
 #include <memory>
-
   
 namespace dbt {
   class AOSIROpt {
@@ -16,6 +15,6 @@ namespace dbt {
     enum OptLevel { Basic, Soft, Medium, Hard, Custom };
 
     void optimizeIRFunction(std::shared_ptr<llvm::Module>, std::vector<uint16_t>, OptLevel);
-    void customOptimizeIRFunction(llvm::Module*, std::vector<std::string>);
+    void optimizeIRFunction(llvm::Module* M, std::vector<uint16_t>, OptLevel);
   };
 } //namespace dbt

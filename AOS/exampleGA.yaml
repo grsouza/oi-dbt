@@ -1,6 +1,5 @@
 # AOS Configuration File
 # COMMON
-
 times: 4
 
 updateDatabase: true
@@ -20,7 +19,7 @@ roi: 396
 icStrategy: GA 
 icStrategyParams:
   searchSpace: RANDOM #[RANDOM; BASELINE; BEST10]
-  generations: 50
+  generations: 100
   mutationRate: 0.6
   crossoverRate: 0.3
   populationSize: 6

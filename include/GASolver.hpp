@@ -9,6 +9,7 @@
 #include "AOSLog.hpp"
 #include "SearchSpace.hpp"
 #include "DNA.hpp"
+#include "AOSDataset.hpp"
 
 #include <memory>
 
@@ -35,7 +36,7 @@ namespace dbt {
     int pickOne();
     void newPoputation(float, float);
     void searchBest(); 
-    
+    GADNA* getBest() { return Best; }
     void toPrintInfo(std::ofstream&);
   };
 
@@ -47,7 +48,7 @@ namespace dbt {
   public:
     GASolver(const GASolverParams &Params) : AOSSolver(), Params(Params), 
       TotalRegion(0) {}
-    void Solve(llvm::Module*) override;
+    DatasetFields* Solve(llvm::Module*) override;
     void Evaluate() override;
   };
 } // namespace dbt

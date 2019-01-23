@@ -6,6 +6,7 @@
 #include "AOSIROpt.hpp"
 #include "AOSLog.hpp"
 #include "CodeAnalyzer.hpp"
+#include "AOSDataset.hpp"
 
 #include "llvm/Bitcode/BitcodeWriter.h"
 #include "llvm/IR/Module.h"
@@ -20,7 +21,7 @@ protected:
 public:
   AOSSolver() { LOG = std::make_unique<AOSLog>("AOSLog.out"); }
   virtual ~AOSSolver() {}
-  virtual void Solve(llvm::Module *) = 0;
+  virtual DatasetFields* Solve(llvm::Module *) = 0;
   virtual void Evaluate() = 0;
 };
 } // namespace dbt

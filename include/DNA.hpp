@@ -39,6 +39,7 @@ public:
   void toPrintInfo(std::ofstream &File) const;
   void calcFitness(std::shared_ptr<llvm::Module> M);
   inline int getFitness() const { return Fitness; }
+  std::vector<uint16_t> getGenes() { return Genes; }
 };
 
 

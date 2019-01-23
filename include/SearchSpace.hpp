@@ -12,8 +12,13 @@ namespace dbt {
 
 enum class SearchSpaceType { RANDOM, BEST10, BASELINE };
 
-static std::vector<uint16_t> best10 = {_NONE, LOOP_ROTATE, GVN, MEMCPYOPT};
-static std::vector<uint16_t> baseline = {_NONE, MEM2REG};
+static std::vector<uint16_t> best10 = {
+  _NONE, LOOP_ROTATE, GVN, MEMCPYOPT
+};
+
+static std::vector<uint16_t> baseline = {
+  _NONE, MEM2REG
+};
 
 } // namespace dbt
 

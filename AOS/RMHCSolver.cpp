@@ -12,7 +12,7 @@ using namespace dbt;
 RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
     : AOSSolver(), Params(Params), TotalRegion(0) {}
 
-void RMHCSolver::Solve(llvm::Module *M) {
+DatasetFields* RMHCSolver::Solve(llvm::Module *M) {
 
   Mod = M;
   LOG->newRegion(++TotalRegion);

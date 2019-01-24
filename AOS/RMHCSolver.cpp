@@ -1,6 +1,8 @@
 #include "RMHCSolver.hpp"
 #include "AOSLog.hpp"
 #include "SearchSpace.hpp"
+#include "manager.hpp"
+
 #include "llvm/IR/Constant.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Module.h"
@@ -12,8 +14,7 @@ using namespace dbt;
 RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
     : AOSSolver(), Params(Params), TotalRegion(0) {}
 
-DatasetFields* RMHCSolver::Solve(llvm::Module *M) {
-
+std::vector<uint16_t> RMHCSolver::Solve(llvm::Module *M) {
   Mod = M;
   LOG->newRegion(++TotalRegion);
 
@@ -34,6 +35,8 @@ DatasetFields* RMHCSolver::Solve(llvm::Module *M) {
 
   Evaluate();
 }
+
+void RMHCSolver::Solve(llvm::Module *, TestModeInfo) {}
 
 void RMHCSolver::Evaluate() { LOG->dna(BestEvaluated); }
 

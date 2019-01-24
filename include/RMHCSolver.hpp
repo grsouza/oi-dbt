@@ -3,9 +3,10 @@
 #include "AOSSolver.hpp"
 #include "DNA.hpp"
 #include "SearchSpace.hpp"
-#include "AOSDataset.hpp"
+#include "AOSDatabase.hpp"
 
 namespace dbt {
+struct TestModeInfo;
 
 struct RMHCSolverParams : public AOSSolverParams {
   unsigned Size, Max, Min;
@@ -23,7 +24,8 @@ public:
   RMHCSolver(const RMHCSolverParams &Params);
   ~RMHCSolver() { delete BestEvaluated; }
 
-  DatasetFields* Solve(llvm::Module *M) override;
+  std::vector<uint16_t> Solve(llvm::Module *M) override;
+  void Solve(llvm::Module *, TestModeInfo) override;
   void Evaluate() override;
 
 private:

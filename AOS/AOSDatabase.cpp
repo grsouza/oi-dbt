@@ -1,8 +1,8 @@
-#include "AOSDataset.hpp"
+#include "AOSDatabase.hpp"
 
 using namespace dbt;
 
-void MappingTraits<DatasetFields>::mapping(IO &io, DatasetFields &Params) {
+void MappingTraits<Data>::mapping(IO &io, Data &Params) {
   io.mapRequired("DNA", Params.DNA);
   io.mapRequired("SetOpts", Params.SetOpts);
   io.mapRequired("compileTime", Params.CompileTime);

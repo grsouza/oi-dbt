@@ -140,8 +140,12 @@ void Manager::runPipeline() {
       for (auto& F : *Module)
         for (auto& BB : F)
           Size += BB.size();
-      
-      TheAOS.run(Module);
+     
+      if(!TestMode) {
+        TheAOS.run(Module);
+      }else {
+        TheAOS.run(Module, Test);
+      }
 
       for (auto& F : *Module)
         for (auto& BB : F)

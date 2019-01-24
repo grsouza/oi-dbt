@@ -9,11 +9,12 @@
 #include "AOSLog.hpp"
 #include "SearchSpace.hpp"
 #include "DNA.hpp"
-#include "AOSDataset.hpp"
+#include "AOSDatabase.hpp"
 
 #include <memory>
 
 namespace dbt {
+  struct TestModeInfo;
   struct GASolverParams : public AOSSolverParams {
     unsigned int Generations;
     float MutationRate;
@@ -48,7 +49,8 @@ namespace dbt {
   public:
     GASolver(const GASolverParams &Params) : AOSSolver(), Params(Params), 
       TotalRegion(0) {}
-    DatasetFields* Solve(llvm::Module*) override;
+    std::vector<uint16_t> Solve(llvm::Module*) override;
+    void Solve(llvm::Module *, TestModeInfo) override;
     void Evaluate() override;
   };
 } // namespace dbt

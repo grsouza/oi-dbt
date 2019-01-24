@@ -1,19 +1,11 @@
 #include "AOS.hpp"
 #include "AOSParams.hpp"
 
-#include "llvm/Support/MemoryBuffer.h"
-#include "llvm/Support/YAMLTraits.h"
-#include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/FileSystem.h"
-#include "llvm/Support/FormattedStream.h"
-#include "llvm/ADT/SmallString.h"
-#include "llvm/Support/Format.h"
-#include "llvm/Support/raw_ostream.h"
-
-#include "AOSDataset.hpp"
+#include "AOSDatabase.hpp"
 
 #include <iostream>
 #include <string>
+#include <time.h>
 
 using llvm::yaml::Output;
 
@@ -45,12 +37,33 @@ AOS::AOS(const AOSParams &params) {
 }
 
 void AOS::run(llvm::Module *M) {
-  auto Obj = this->solver->Solve(M);
+  float CompileTime;
+  time_t t_start, t_end;
+  
+  t_start = time(NULL);
+  auto SeqOpts = this->solver->Solve(M);
+  t_end = time(NULL);
+  
+  CompileTime = difftime(t_end, t_start);
+  std::string DNARegion = CodeAnalyzer::getSymbolicRepresentation(M);
   
   std::string Text;
   llvm::raw_string_ostream Stream(Text);
-  llvm::yaml::Output yout(Stream);
-  yout << *Obj;
 
-  std::cout << Stream.str() << std::endl;
+  std::ofstream file;
+  file.open("teste.yaml", std::fstream::app);
+
+  Data D;
+  D.DNA = DNARegion;
+  D.CompileTime = CompileTime;
+  D.SetOpts = SeqOpts;
+  D.ExecTime = 0; 
+  
+  llvm::yaml::Output yout(Stream);
+  yout << D;
+  file << Stream.str();
+}
+ 
+void AOS::run(llvm::Module *M, TestModeInfo T) {
+  this->solver->Solve(M, T);
 }

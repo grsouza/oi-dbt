@@ -12,7 +12,8 @@
 #include <memory>
 
 clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file", "");
-clarg::argBool LockModeFlag("-lockmode", "Blocks the emulator when a region encountered until it is compiled");
+clarg::argString TestFlag("-testmode", "Optimizer only one region with optimization sequence provided", "");
+clarg::argBool LockModeFlag("-lockmode", "Blocks the emulator when a region is encountered until it's compiled");
 
 clarg::argString RFTFlag("-rft", "Region Formation Technique (net)",
                          "netplus-e-r");
@@ -199,6 +200,36 @@ int main(int argc, char **argv) {
 
   if (LockModeFlag.get_value() == true) {
     TheManager.setLockMode();
+  }
+
+  if (TestFlag.was_set()) {
+    dbt::TestModeInfo T;
+    unsigned i = 0, Buffer = 0;
+    std::string Info = TestFlag.get_value();
+    char c = Info[i];
+
+    T.RegionID = 0;
+
+    while(c != ':') {
+      T.RegionID = T.RegionID * 10 + c - 48;
+      c = Info[++i];
+    }
+      
+    c = Info[++i];
+
+    while(i < Info.size()) {
+      if(c == '-') {
+        T.Opts.push_back(Buffer);
+        Buffer = 0;
+        c = Info[++i];
+      }
+      Buffer = Buffer * 10 + c - 48;
+      c = Info[++i];
+    }
+    T.Opts.push_back(Buffer);
+  
+    TheManager.setTestModeInfo(T);
+    TheManager.setTestMode();
   }
 
   if (LoadRegionsFlag.was_set() || LoadOIFlag.was_set() ||

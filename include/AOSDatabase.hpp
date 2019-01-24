@@ -9,7 +9,7 @@ using llvm::yaml::MappingTraits;
 using llvm::yaml::IO;
 
 namespace dbt {
-  struct DatasetFields {
+  struct Data {
     std::string DNA;
     std::vector<uint16_t> SetOpts;
     float CompileTime;
@@ -17,6 +17,6 @@ namespace dbt {
   };
 }
 
-template <> struct llvm::yaml::MappingTraits<dbt::DatasetFields> {
-  static void mapping(llvm::yaml::IO &io, dbt::DatasetFields &Params);
+template <> struct llvm::yaml::MappingTraits<dbt::Data> {
+  static void mapping(llvm::yaml::IO &io, dbt::Data &Params);
 };

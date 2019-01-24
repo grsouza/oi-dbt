@@ -22,6 +22,10 @@
 #define NATIVE_REGION_SIZE 1000000
 
 namespace dbt {
+  struct TestModeInfo {
+    unsigned RegionID;
+    std::vector<uint16_t> Opts;
+  };
   class IREmitter;
   class Machine;
   class AOS;
@@ -34,6 +38,8 @@ namespace dbt {
       dbt::Machine& TheMachine;
       dbt::AOS& TheAOS;
       std::string RegionPath;
+
+      TestModeInfo Test;
 
       std::vector<uint32_t> OIRegionsKey;
       spp::sparse_hash_map<uint32_t, OIInstList> OIRegions;
@@ -73,6 +79,7 @@ namespace dbt {
 
       bool VerboseOutput = false;
       bool LockMode = false;
+      bool TestMode = false;
 
 			std::unordered_map<uint32_t, llvm::Module*> ModulesLoaded;
       bool IsToLoadRegions = false;
@@ -137,6 +144,22 @@ namespace dbt {
 
       bool getLockMode() {
         return LockMode;
+      }
+
+      void setTestMode() {
+        TestMode = true;
+      }
+
+      bool getTestMode() {
+        return TestMode;
+      }
+
+      void setTestModeInfo(TestModeInfo T) {
+        Test = T;
+      }
+
+      TestModeInfo getTestModeInfo() {
+        return Test;
       }
 
       unsigned getCompiledRegions (void){

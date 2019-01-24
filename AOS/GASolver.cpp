@@ -7,8 +7,7 @@
 #include "llvm/Transforms/Utils/ValueMapper.h"
 
 #include "DNA.hpp"
-
-#include <time.h>
+#include "manager.hpp"
 
 using namespace dbt;
 
@@ -181,15 +180,11 @@ void Population::normalize() {
 //// GASolver 
 ////===----------------------------------------------------------------------===//
 
-DatasetFields* GASolver::Solve(llvm::Module *Mod) {
-  float CompileTime;
-  time_t t_start, t_end;
-  
+std::vector<uint16_t> GASolver::Solve(llvm::Module *Mod) {
   M = Mod;
   ++TotalRegion;
   LOG->newRegion(TotalRegion);
 
-  t_start = time(NULL);
   CurrentPop = std::make_shared<Population>(Params.PopulationSize, Params.Max, 
       Params.SearchSpace);
   
@@ -201,21 +196,20 @@ DatasetFields* GASolver::Solve(llvm::Module *Mod) {
   
   Evaluate();
   
-  t_end = time(NULL);
-  CompileTime = difftime(t_end, t_start);
-
   auto Seq = CurrentPop->getBest();
   auto IRO = llvm::make_unique<AOSIROpt>();
   
-  std::string DNARegion = CodeAnalyzer::getSymbolicRepresentation(Mod);
   IRO->optimizeIRFunction(Mod, Seq->getGenes(), AOSIROpt::OptLevel::Basic);
 
-  DatasetFields *D = new DatasetFields();
-  D->DNA = DNARegion;
-  D->CompileTime = CompileTime;
-  D->SetOpts = Seq->getGenes();
-  
-  return D;
+  return Seq->getGenes();
+}
+ 
+void GASolver::Solve(llvm::Module *M, TestModeInfo T) {
+  ++TotalRegion;
+  if(T.RegionID == TotalRegion) {
+    auto IRO = llvm::make_unique<AOSIROpt>();
+    IRO->optimizeIRFunction(M, T.Opts, AOSIROpt::OptLevel::Basic);
+  }
 }
 
 void GASolver::Evaluate() {

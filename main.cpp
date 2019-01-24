@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
     return 2;
   }
 
-  dbt::AOS A = dbt::AOS::create(AOSFlag.get_value());
+  dbt::AOS A = dbt::AOS::create(AOSFlag.get_value(), BinaryFlag.get_value());
   dbt::Manager TheManager(M.getDataMemOffset(), M, A, VerboseFlag.was_set());
 
   if (LockModeFlag.get_value() == true) {

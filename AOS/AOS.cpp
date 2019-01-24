@@ -1,17 +1,16 @@
-#include "AOS.hpp"
-#include "AOSParams.hpp"
-
-#include "AOSDatabase.hpp"
-
 #include <iostream>
 #include <string>
 #include <time.h>
+
+#include "AOS.hpp"
+#include "AOSParams.hpp"
+#include "AOSDatabase.hpp"
 
 using llvm::yaml::Output;
 
 using namespace dbt;
 
-AOS AOS::create(const std::string &filePath) {
+AOS AOS::create(const std::string &filePath, const std::string &program) {
   auto InputBuffer = llvm::MemoryBuffer::getFile(filePath);
   llvm::yaml::Input yin(InputBuffer->get()->getBuffer());
 
@@ -22,10 +21,12 @@ AOS AOS::create(const std::string &filePath) {
     std::cerr << yin.error().message() << std::endl;
   }
 
-  return AOS(params);
+  return AOS(params, program);
 }
 
-AOS::AOS(const AOSParams &params) {
+AOS::AOS(const AOSParams &params, const std::string &program) {
+  Params = params;
+  Program = program;
   switch (params.icStrategy.value) {
   case AOSParams::ICStrategy::GA:
     this->solver = new GASolver(params.icStrategy.params.ga);
@@ -48,6 +49,7 @@ void AOS::run(llvm::Module *M) {
   std::string DNARegion = CodeAnalyzer::getSymbolicRepresentation(M);
   
   Data D;
+  D.Program = Program;
   D.DNA = DNARegion;
   D.CompileTime = CompileTime;
   D.SetOpts = SeqOpts;
@@ -65,15 +67,17 @@ void AOS::generateData() {
     std::ofstream file;
     std::string Text;
     
+    if(Params.updateDatabase) {
+      file.open(Params.database, std::fstream::app);
+    }else if(Params.createDatabase) {
+      file.open(Params.database);
+    }
+    
     llvm::raw_string_ostream Stream(Text);
     llvm::yaml::Output yout(Stream);
     
-    file.open("regions.yaml", std::fstream::app);
-    
-    for(unsigned i = 0; i < Regions.size(); i++) {
-      yout << Regions[i];
-    }
-    
+    yout << Regions;
+
     file << Stream.str();
   }
 }

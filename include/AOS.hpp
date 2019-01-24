@@ -18,14 +18,16 @@
 namespace dbt {
   struct TestModeInfo;
   class AOS {
+    AOSParams Params;
+    std::string Program;
     AOSSolver *solver;
     std::vector<Data> Regions;
   public:
-    static AOS create(const std::string &filePath);
+    static AOS create(const std::string&, const std::string&);
     void run(llvm::Module *);
     void run(llvm::Module *, TestModeInfo);
     void generateData(); 
   private:
-    AOS(const AOSParams &params);
+    AOS(const AOSParams&, const std::string&);
   };
 } // namespace dbt

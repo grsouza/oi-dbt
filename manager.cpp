@@ -259,3 +259,7 @@ int32_t Manager::jumpToRegion(uint32_t EntryAddress) {
 
   return JumpTo;
 }
+
+void Manager::dumpRegionsData() {
+  TheAOS.generateData();
+}

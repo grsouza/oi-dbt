@@ -47,23 +47,33 @@ void AOS::run(llvm::Module *M) {
   CompileTime = difftime(t_end, t_start);
   std::string DNARegion = CodeAnalyzer::getSymbolicRepresentation(M);
   
-  std::string Text;
-  llvm::raw_string_ostream Stream(Text);
-
-  std::ofstream file;
-  file.open("teste.yaml", std::fstream::app);
-
   Data D;
   D.DNA = DNARegion;
   D.CompileTime = CompileTime;
   D.SetOpts = SeqOpts;
   D.ExecTime = 0; 
-  
-  llvm::yaml::Output yout(Stream);
-  yout << D;
-  file << Stream.str();
+ 
+  Regions.push_back(D);
 }
  
 void AOS::run(llvm::Module *M, TestModeInfo T) {
   this->solver->Solve(M, T);
+}
+
+void AOS::generateData() {
+  if(Regions.size() > 0) {
+    std::ofstream file;
+    std::string Text;
+    
+    llvm::raw_string_ostream Stream(Text);
+    llvm::yaml::Output yout(Stream);
+    
+    file.open("regions.yaml", std::fstream::app);
+    
+    for(unsigned i = 0; i < Regions.size(); i++) {
+      yout << Regions[i];
+    }
+    
+    file << Stream.str();
+  }
 }

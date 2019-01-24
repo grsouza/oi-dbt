@@ -183,22 +183,16 @@ void Population::normalize() {
 std::vector<uint16_t> GASolver::Solve(llvm::Module *Mod) {
   M = Mod;
   ++TotalRegion;
-  LOG->newRegion(TotalRegion);
-
-  CurrentPop = std::make_shared<Population>(Params.PopulationSize, Params.Max, 
-      Params.SearchSpace);
-  
+  //LOG->newRegion(TotalRegion);
+  CurrentPop = std::make_shared<Population>(Params.PopulationSize, Params.Max, Params.SearchSpace);
   CurrentPop->calcFitness(Mod);
   CurrentPop->searchBest();
   CurrentPop->normalize();
-  
-  LOG->population(CurrentPop);
-  
+  //LOG->population(CurrentPop);
   Evaluate();
   
   auto Seq = CurrentPop->getBest();
   auto IRO = llvm::make_unique<AOSIROpt>();
-  
   IRO->optimizeIRFunction(Mod, Seq->getGenes(), AOSIROpt::OptLevel::Basic);
 
   return Seq->getGenes();
@@ -219,9 +213,7 @@ void GASolver::Evaluate() {
     CurrentPop->calcFitness(M);
     CurrentPop->searchBest();
     CurrentPop->normalize();
-
     LOG->population(CurrentPop);
-    
     it++;
   }
 }

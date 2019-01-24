@@ -104,6 +104,8 @@ namespace dbt {
         ThreadPool.push_back(std::thread(&Manager::runPipeline, this));
       }
 
+      void dumpRegionsData();
+
       void dumpStats() {
         std::cerr << "Compiled Regions: " << std::dec << CompiledRegions << "\n";
         std::cerr << "Avg Code Size Reduction: ";
@@ -113,7 +115,7 @@ namespace dbt {
         std::cerr << "Compiled LLVM: " << LLVMCompiled << std::endl;
         std::cerr << "LLVM/OI: " << ((float)(LLVMCompiled+1)/(OICompiled+1)) << std::endl;
       }
-
+      
       ~Manager() {
         // Alert threads to stop
         isRunning = false;

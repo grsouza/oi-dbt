@@ -19,12 +19,12 @@ namespace dbt {
   struct TestModeInfo;
   class AOS {
     AOSSolver *solver;
-
+    std::vector<Data> Regions;
   public:
     static AOS create(const std::string &filePath);
     void run(llvm::Module *);
     void run(llvm::Module *, TestModeInfo);
-
+    void generateData(); 
   private:
     AOS(const AOSParams &params);
   };

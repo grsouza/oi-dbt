@@ -332,6 +332,8 @@ int main(int argc, char **argv) {
 
   I.executeAll(M);
 
+  TheManager.dumpRegionsData();
+  
   if (DumpRegionsFlag.was_set() || DumpOIRegionsFlag.was_set())
     TheManager.dumpRegions(MergeOIFlag.was_set(), DumpOIRegionsFlag.was_set());
 

@@ -1,20 +1,23 @@
 #pragma once
 
-#include <string>
-#include "llvm/IR/Module.h"
 #include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Module.h"
+#include <string>
 
 #include <memory>
-  
+
 namespace dbt {
-  class AOSIROpt {
-    void populateFuncPassManager(llvm::legacy::FunctionPassManager*, std::vector<uint16_t>);
-  public:
-    AOSIROpt() {}; 
+class AOSIROpt {
+  void populateFuncPassManager(llvm::legacy::FunctionPassManager *,
+                               std::vector<uint16_t>);
 
-    enum OptLevel { Basic, Soft, Medium, Hard, Custom };
+public:
+  AOSIROpt(){};
 
-    void optimizeIRFunction(std::shared_ptr<llvm::Module>, std::vector<uint16_t>, OptLevel);
-    void optimizeIRFunction(llvm::Module* M, std::vector<uint16_t>, OptLevel);
-  };
-} //namespace dbt
+  enum OptLevel { Basic, Soft, Medium, Hard, Custom };
+
+  void optimizeIRFunction(std::shared_ptr<llvm::Module>, std::vector<uint16_t>,
+                          OptLevel);
+  void optimizeIRFunction(llvm::Module *M, std::vector<uint16_t>, OptLevel);
+};
+} // namespace dbt

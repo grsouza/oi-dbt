@@ -4,9 +4,9 @@ using namespace dbt;
 
 #include "GASolver.hpp"
 
-void AOSLog::newRegion(int regionID) {
+void AOSLog::newRegion(int RegionID) {
   File.open(FileName, std::ostream::app);
-  File << "--> REGION #" << regionID  << std::endl;
+  File << "--> REGION #" << RegionID << std::endl;
   File.close();
 }
 
@@ -22,4 +22,4 @@ void AOSLog::dna(DNA *D) {
   D->toPrintInfo(File);
   File << std::endl;
   File.close();
-} 
+}

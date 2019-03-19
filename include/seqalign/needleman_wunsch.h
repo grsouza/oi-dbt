@@ -10,8 +10,8 @@
 #ifndef NEEDLEMAN_WUNSCH_HEADER_SEEN
 #define NEEDLEMAN_WUNSCH_HEADER_SEEN
 
-#include "seq_align.h"
-#include "alignment.h"
+#include "seqalign/seq_align.h"
+#include "seqalign/alignment.h"
 
 typedef aligner_t nw_aligner_t;
 

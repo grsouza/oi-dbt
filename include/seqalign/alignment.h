@@ -9,7 +9,7 @@
 #define ALIGNMENT_HEADER_SEEN
 
 #include <string.h> // memset
-#include "alignment_scoring.h"
+#include "seqalign/alignment_scoring.h"
 
 #ifndef ROUNDUP2POW
   #define ROUNDUP2POW(x) _rndup2pow64(x)

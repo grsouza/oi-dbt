@@ -15,8 +15,8 @@
 #include <string.h> // memset
 #include <ctype.h> // tolower
 
-#include "alignment_scoring.h"
-#include "alignment_macros.h"
+#include "seqalign/alignment_scoring.h"
+#include "seqalign/alignment_macros.h"
 
 void scoring_init(scoring_t* scoring,
                   int match, int mismatch,

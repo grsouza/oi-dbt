@@ -55,4 +55,5 @@ target_link_libraries(oi-dbt PUBLIC "LLVM-7" ${llvm_libs}
   dl
   curses
   stdc++fs
+  seqalign
 )

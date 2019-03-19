@@ -47,6 +47,9 @@ void AOS::run(llvm::Module *M) {
   CompileTime = difftime(t_end, t_start);
   std::string DNARegion = CodeAnalyzer::getSymbolicRepresentation(M);
 
+  int Similarity = CodeAnalyzer::getSimilarityBetween(DNARegion, DNARegion);
+  std::cout << "Similarity: " << Similarity << std::endl;
+
   Data D;
   D.Program = Program;
   D.DNA = DNARegion;

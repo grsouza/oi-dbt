@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "needleman_wunsch.h"
+#include "seqalign/needleman_wunsch.h"
 
 nw_aligner_t* needleman_wunsch_new()
 {

@@ -24,6 +24,7 @@ include_directories(include)
 add_subdirectory(AOS)
 add_subdirectory(RFT)
 add_subdirectory(arglib)
+add_subdirectory(seqalign)
 
 add_library(dbt 
   regionMerge.cpp

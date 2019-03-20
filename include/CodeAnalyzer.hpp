@@ -17,7 +17,6 @@ namespace dbt {
 class CodeAnalyzer {
 public:
   static std::string getSymbolicRepresentation(const llvm::Module *);
-  static int getSimilarityBetween(const std::string &, const std::string &);
 
   CodeAnalyzer() {}
   int getStaticSize(std::shared_ptr<llvm::Module>);

@@ -1,1 +1,6 @@
-add_library(AOS AOS.cpp AOSIROpt.cpp CodeAnalyzer.cpp GASolver.cpp AOSParams.cpp RMHCSolver.cpp AOSLog.cpp DNA.cpp SearchSpace.cpp AOSDatabase.cpp) 
+cmake_minimum_required (VERSION 2.6)
+
+file(GLOB headers *.h)
+file(GLOB sources *.cpp)
+
+add_library(AOS ${sources} ${headers})

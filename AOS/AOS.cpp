@@ -27,12 +27,20 @@ AOS::AOS(const AOSParams &Params, const std::string &Program)
     : Params(Params), Program(Program) {
   switch (Params.icStrategy.value) {
   case AOSParams::ICStrategy::GA:
-    this->Solver = new GASolver(Params.icStrategy.params.ga);
+    this->Solver = std::make_unique<GASolver>(Params.icStrategy.params.ga);
     break;
 
   case AOSParams::ICStrategy::RMHC:
-    this->Solver = new RMHCSolver(Params.icStrategy.params.rmhc);
+    this->Solver = std::make_unique<RMHCSolver>(Params.icStrategy.params.rmhc);
     break;
+  }
+
+  switch (Params.similarity) {
+  case AOSParams::SimilarityStrategy::NAW:
+    this->SimilarityStrategy = std::make_unique<NWAOSSimilarityStrategy>();
+
+  case AOSParams::SimilarityStrategy::CMP:
+    assert(false && "Strategy not supported.");
   }
 }
 
@@ -47,7 +55,8 @@ void AOS::run(llvm::Module *M) {
   CompileTime = difftime(t_end, t_start);
   std::string DNARegion = CodeAnalyzer::getSymbolicRepresentation(M);
 
-  int Similarity = CodeAnalyzer::getSimilarityBetween(DNARegion, DNARegion);
+  int Similarity =
+      SimilarityStrategy->getSimilarityBetween(DNARegion, DNARegion);
   std::cout << "Similarity: " << Similarity << std::endl;
 
   Data D;

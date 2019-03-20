@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AOSParams.hpp"
+#include "AOSSimilarityStrategy.hpp"
 #include "AOSSolver.hpp"
 
 #include "llvm/ADT/SmallString.h"
@@ -19,7 +20,8 @@ struct TestModeInfo;
 class AOS {
   AOSParams Params;
   std::string Program;
-  AOSSolver *Solver;
+  std::unique_ptr<AOSSolver> Solver;
+  std::unique_ptr<AOSSimilarityStrategy> SimilarityStrategy;
   std::vector<Data> Regions;
 
 public:

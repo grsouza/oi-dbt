@@ -1,19 +1,24 @@
+#include "AOS.hpp"
+
 #include <RFT.hpp>
 #include <algorithm>
 #include <arglib/arglib.hpp>
 #include <interpreter.hpp>
+#include <iostream>
+#include <machine.hpp>
 #include <manager.hpp>
+#include <memory>
 #include <syscall.hpp>
 #include <timer.hpp>
 
-#include <iostream>
-#include <machine.hpp>
-#include "AOS.hpp"
-#include <memory>
-
 clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file", "");
-clarg::argString TestFlag("-testmode", "Optimizer only one region with optimization sequence provided", "");
-clarg::argBool LockModeFlag("-lockmode", "Blocks the emulator when a region is encountered until it's compiled");
+clarg::argString
+    TestFlag("-testmode",
+             "Optimizer only one region with optimization sequence provided",
+             "");
+clarg::argBool LockModeFlag(
+    "-lockmode",
+    "Blocks the emulator when a region is encountered until it's compiled");
 
 clarg::argString RFTFlag("-rft", "Region Formation Technique (net)",
                          "netplus-e-r");
@@ -210,15 +215,15 @@ int main(int argc, char **argv) {
 
     T.RegionID = 0;
 
-    while(c != ':') {
+    while (c != ':') {
       T.RegionID = T.RegionID * 10 + c - 48;
       c = Info[++i];
     }
-      
+
     c = Info[++i];
 
-    while(i < Info.size()) {
-      if(c == '-') {
+    while (i < Info.size()) {
+      if (c == '-') {
         T.Opts.push_back(Buffer);
         Buffer = 0;
         c = Info[++i];
@@ -227,7 +232,7 @@ int main(int argc, char **argv) {
       c = Info[++i];
     }
     T.Opts.push_back(Buffer);
-  
+
     TheManager.setTestModeInfo(T);
     TheManager.setTestMode();
   }
@@ -333,7 +338,7 @@ int main(int argc, char **argv) {
   I.executeAll(M);
 
   TheManager.dumpRegionsData();
-  
+
   if (DumpRegionsFlag.was_set() || DumpOIRegionsFlag.was_set())
     TheManager.dumpRegions(MergeOIFlag.was_set(), DumpOIRegionsFlag.was_set());
 

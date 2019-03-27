@@ -16,7 +16,9 @@
 #include "manager.hpp"
 
 namespace dbt {
+
 struct TestModeInfo;
+
 class AOS {
   AOSParams Params;
   std::string Program;
@@ -26,6 +28,7 @@ class AOS {
 
 public:
   static AOS create(const std::string &, const std::string &);
+  
   void run(llvm::Module *);
   void run(llvm::Module *, TestModeInfo);
   void generateData();
@@ -33,4 +36,5 @@ public:
 private:
   AOS(const AOSParams &, const std::string &);
 };
+
 } // namespace dbt

@@ -38,9 +38,25 @@ AOS::AOS(const AOSParams &Params, const std::string &Program)
   switch (Params.similarity) {
   case AOSParams::SimilarityStrategy::NAW:
     this->SimilarityStrategy = std::make_unique<NWAOSSimilarityStrategy>();
+    break;
 
   case AOSParams::SimilarityStrategy::CMP:
     assert(false && "Strategy not supported.");
+  }
+
+  switch (Params.characterization) {
+  case AOSParams::CharacterizationStrategy::DNA:
+    this->RegionCharacterizationStrategy =
+        std::make_unique<DNARegionCharacterizationStrategy>();
+    break;
+
+  case AOSParams::CharacterizationStrategy::DND:
+    assert(false && "Strategy not supported.");
+    break;
+
+  case AOSParams::CharacterizationStrategy::FLL:
+    assert(false && "Strategy not supported.");
+    break;
   }
 }
 
@@ -48,16 +64,22 @@ void AOS::run(llvm::Module *M) {
   float CompileTime;
   time_t t_start, t_end;
 
+  std::string DNARegion =
+      RegionCharacterizationStrategy->getCharacterization(*M);
+
+  std::cout << "Region DNA:" << std::endl << DNARegion << std::endl;
+
   t_start = time(NULL);
   auto SeqOpts = this->Solver->Solve(M);
   t_end = time(NULL);
 
   CompileTime = difftime(t_end, t_start);
-  std::string DNARegion = CodeAnalyzer::getSymbolicRepresentation(M);
 
-  int Similarity =
-      SimilarityStrategy->getSimilarityBetween(DNARegion, DNARegion);
-  std::cout << "Similarity: " << Similarity << std::endl;
+  // if (Regions.size() > 1) {
+  //   int Similarity = SimilarityStrategy->getSimilarityBetween(
+  //       DNARegion, Regions[Regions.size() - 1].DNA);
+  //   std::cout << "Similarity: " << Similarity << std::endl;
+  // }
 
   Data D;
   D.Program = Program;

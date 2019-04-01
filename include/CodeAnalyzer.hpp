@@ -16,7 +16,6 @@
 namespace dbt {
 class CodeAnalyzer {
 public:
-  static std::string getSymbolicRepresentation(const llvm::Module *);
 
   CodeAnalyzer() {}
   int getStaticSize(std::shared_ptr<llvm::Module>);

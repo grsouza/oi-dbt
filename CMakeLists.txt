@@ -44,7 +44,7 @@ install(TARGETS oi-dbt RUNTIME DESTINATION bin)
 
 llvm_map_components_to_libnames(llvm_libs support core irreader)
 
-target_link_libraries(oi-dbt PUBLIC "LLVM-7" ${llvm_libs}
+target_link_libraries(oi-dbt
   papi 
   AOS
   RFT 
@@ -56,4 +56,13 @@ target_link_libraries(oi-dbt PUBLIC "LLVM-7" ${llvm_libs}
   curses
   stdc++fs
   seqalign
+
+  LLVMLTO LLVMPasses LLVMObjCARCOpts LLVMSymbolize LLVMDebugInfoPDB LLVMDebugInfoDWARF LLVMFuzzMutate LLVMTableGen 
+  LLVMDlltoolDriver LLVMOrcJIT LLVMCoverage LLVMMIRParser LLVMObjectYAML LLVMLibDriver LLVMOption 
+  LLVMWindowsManifest LLVMX86Disassembler LLVMX86AsmParser LLVMX86CodeGen LLVMGlobalISel LLVMSelectionDAG 
+  LLVMAsmPrinter LLVMDebugInfoCodeView LLVMDebugInfoMSF LLVMX86Desc LLVMMCDisassembler LLVMX86Info 
+  LLVMX86AsmPrinter LLVMX86Utils LLVMMCJIT LLVMInterpreter LLVMExecutionEngine LLVMRuntimeDyld LLVMCodeGen 
+  LLVMTarget LLVMCoroutines LLVMipo LLVMInstrumentation LLVMVectorize LLVMScalarOpts LLVMLinker LLVMIRReader 
+  LLVMAsmParser LLVMInstCombine LLVMTransformUtils LLVMBitWriter LLVMAnalysis LLVMProfileData LLVMObject LLVMMCParser 
+  LLVMMC LLVMBitReader LLVMCore LLVMBinaryFormat LLVMSupport LLVMDemangle
 )

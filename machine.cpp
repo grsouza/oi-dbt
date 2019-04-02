@@ -8,29 +8,33 @@ using namespace dbt;
 //#define DEBUG
 
 #ifdef DEBUG
-  #define CORRECT_ASSERT() assert(Addr>=DataMemOffset && "Error on correcting address. Data memory offset Value < 0!")
+#define CORRECT_ASSERT()                                                       \
+  assert(Addr >= DataMemOffset &&                                              \
+         "Error on correcting address. Data memory offset Value < 0!")
 #else
-  #define CORRECT_ASSERT()
-#endif //DEBUG
+#define CORRECT_ASSERT()
+#endif // DEBUG
 
 //#define MAX_ARGUMENT_SIZE 1024 * 1024 /* 1mb */
 
 union HalfUn {
-	char asC_[2];
-	uint16_t asH_;
+  char asC_[2];
+  uint16_t asH_;
 };
 
-void copystr(char* Target, const char* Source, uint32_t Size) {
+void copystr(char *Target, const char *Source, uint32_t Size) {
   for (uint32_t i = 0; i < Size; ++i)
     Target[i] = Source[i];
 }
 
-void Machine::setCodeMemory(uint32_t StartAddress, uint32_t Size, const char* CodeBuffer) {
+void Machine::setCodeMemory(uint32_t StartAddress, uint32_t Size,
+                            const char *CodeBuffer) {
   CodeMemOffset = StartAddress;
   CodeMemory = uptr<Word[]>(new Word[Size]);
   CodeMemLimit = Size + CodeMemOffset;
   for (uint32_t i = 0; i < Size; i++) {
-    Word Bytes = {CodeBuffer[i], CodeBuffer[i+1], CodeBuffer[i+2], CodeBuffer[i+3]};
+    Word Bytes = {CodeBuffer[i], CodeBuffer[i + 1], CodeBuffer[i + 2],
+                  CodeBuffer[i + 3]};
     CodeMemory[i] = Bytes;
   }
 }
@@ -42,65 +46,61 @@ void Machine::allocDataMemory(uint32_t Offset, uint32_t TotalSize) {
   DataMemory = std::unique_ptr<char[]>(new char[TotalSize]);
 }
 
-void Machine::addDataMemory(uint32_t StartAddress, uint32_t Size, const char* DataBuffer) {
+void Machine::addDataMemory(uint32_t StartAddress, uint32_t Size,
+                            const char *DataBuffer) {
   uint32_t Offset = StartAddress - DataMemOffset;
-  DataMemLimit += Size;               //Ops, allocated memory stills the same, no more allocation is done and DataMemLimit is updated!
+  DataMemLimit += Size; // Ops, allocated memory stills the same, no more
+                        // allocation is done and DataMemLimit is updated!
   copystr(DataMemory.get() + Offset, DataBuffer, Size);
 }
 
 int Machine::setCommandLineArguments(std::string parameters) {
-  unsigned int sp = getRegister(29), totalSize=0, offset;
+  unsigned int sp = getRegister(29), totalSize = 0, offset;
 
   std::istringstream iss(parameters);
-  std::vector<std::string> argv(std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
+  std::vector<std::string> argv(std::istream_iterator<std::string>{iss},
+                                std::istream_iterator<std::string>());
   argv.insert(argv.cbegin(), BinPath);
 
   for (auto argument : argv)
-    totalSize += argument.length()+1;
+    totalSize += argument.length() + 1;
 
-  offset = DataMemTotalSize-totalSize-1;
-  setMemValueAt(sp, (uint32_t) argv.size());
+  offset = DataMemTotalSize - totalSize - 1;
+  setMemValueAt(sp, (uint32_t)argv.size());
 
-  for(auto argument : argv) {
-    sp += 4;                                                          //Subtract stack pointer
-    unsigned argSize = argument.length()+1;                           //Argument size
-    copystr(DataMemory.get() + offset, argument.c_str(), argSize);    //Put argument in sp+4+size(arg[0..])=offset
-    setMemValueAt(sp, (uint32_t) offset+DataMemOffset);               //Put offset in sp
-    offset += argSize;                                                //Increment offset by argument Size
+  for (auto argument : argv) {
+    sp += 4;                                  // Subtract stack pointer
+    unsigned argSize = argument.length() + 1; // Argument size
+    copystr(DataMemory.get() + offset, argument.c_str(),
+            argSize); // Put argument in sp+4+size(arg[0..])=offset
+    setMemValueAt(sp, (uint32_t)offset + DataMemOffset); // Put offset in sp
+    offset += argSize; // Increment offset by argument Size
   }
 
-  setMemValueAt(sp+4, 0);
+  setMemValueAt(sp + 4, 0);
   copystr(DataMemory.get() + offset, "\0", 1);
   return 0;
 }
 
-uint32_t Machine::getPC() {
-  return PC;
-}
+uint32_t Machine::getPC() { return PC; }
 
-uint32_t Machine::getLastPC() {
-  return LastPC;
-}
+uint32_t Machine::getLastPC() { return LastPC; }
 
-void Machine::incPC() {
-  PC += 4;
-}
+void Machine::incPC() { PC += 4; }
 
 void Machine::setPC(uint32_t NewPC) {
   LastPC = PC;
   PC = NewPC;
-  #ifdef PRINTREG
+#ifdef PRINTREG
   std::cerr << "LastPC= " << LastPC << "; NewPC= " << PC << ";  ";
-  #endif
+#endif
 }
 
 dbt::Word Machine::getInstAt(uint32_t Addr) {
   return CodeMemory[Addr - CodeMemOffset];
 }
 
-dbt::Word Machine::getInstAtPC() {
-  return getInstAt(PC);
-}
+dbt::Word Machine::getInstAtPC() { return getInstAt(PC); }
 
 dbt::Word Machine::getNextInst() {
   ++PC;
@@ -110,9 +110,10 @@ dbt::Word Machine::getNextInst() {
 void Machine::setMemByteAt(uint32_t Addr, uint8_t Value) {
   uint32_t CorrectAddr = Addr - DataMemOffset;
   CORRECT_ASSERT();
-  #ifdef PRINTREG
-  std::cerr << "MEM[" << std::hex << CorrectAddr << "]=" << (uint32_t) Value << "; (uint8_t);  ";
-  #endif
+#ifdef PRINTREG
+  std::cerr << "MEM[" << std::hex << CorrectAddr << "]=" << (uint32_t)Value
+            << "; (uint8_t);  ";
+#endif
   DataMemory[CorrectAddr] = Value;
 }
 
@@ -125,7 +126,7 @@ uint8_t Machine::getMemByteAt(uint32_t Addr) {
 uint16_t Machine::getMemHalfAt(uint32_t Addr) {
   uint32_t CorrectAddr = Addr - DataMemOffset;
   CORRECT_ASSERT();
-  HalfUn Half = {DataMemory[CorrectAddr], DataMemory[CorrectAddr+1]};
+  HalfUn Half = {DataMemory[CorrectAddr], DataMemory[CorrectAddr + 1]};
   return Half.asH_;
 }
 
@@ -133,109 +134,86 @@ dbt::Word Machine::getMemValueAt(uint32_t Addr) {
   uint32_t CorrectAddr = Addr - DataMemOffset;
   Word Bytes;
   CORRECT_ASSERT();
-  Bytes.asI_ = *((uint32_t*)(DataMemory.get() + CorrectAddr));
+  Bytes.asI_ = *((uint32_t *)(DataMemory.get() + CorrectAddr));
   return Bytes;
 }
 
 void Machine::setMemValueAt(uint32_t Addr, uint32_t Value) {
   uint32_t CorrectAddr = Addr - DataMemOffset;
   CORRECT_ASSERT();
-  #ifdef PRINTREG
-  std::cerr << "MEM[" << std::hex << CorrectAddr << "]=" << Value << "; (uint32_t);  ";
-  #endif
-  *((uint32_t*)(DataMemory.get() + CorrectAddr)) = Value;
+#ifdef PRINTREG
+  std::cerr << "MEM[" << std::hex << CorrectAddr << "]=" << Value
+            << "; (uint32_t);  ";
+#endif
+  *((uint32_t *)(DataMemory.get() + CorrectAddr)) = Value;
 }
 
-uint32_t Machine::getNumInst() {
-  return (CodeMemLimit - CodeMemOffset)/4;
-}
+uint32_t Machine::getNumInst() { return (CodeMemLimit - CodeMemOffset) / 4; }
 
-uint32_t Machine::getCodeStartAddrs() {
-  return CodeMemOffset;
-}
+uint32_t Machine::getCodeStartAddrs() { return CodeMemOffset; }
 
-uint32_t Machine::getCodeEndAddrs() {
-  return CodeMemLimit;
-}
+uint32_t Machine::getCodeEndAddrs() { return CodeMemLimit; }
 
-uint32_t Machine::getDataMemOffset() {
-  return DataMemOffset;
-}
+uint32_t Machine::getDataMemOffset() { return DataMemOffset; }
 
 int32_t Machine::getRegister(uint16_t R) {
-  #ifdef PRINTREG
-  std::cerr << "GET R[" << std::dec << R << "]: " << std::hex << Register[R] << ";  ";
-  #endif
+#ifdef PRINTREG
+  std::cerr << "GET R[" << std::dec << R << "]: " << std::hex << Register[R]
+            << ";  ";
+#endif
   return Register[R];
 }
 
 float Machine::getFloatRegister(uint16_t R) {
-  return ((float*) Register)[R + 66];
+  return ((float *)Register)[R + 66];
 }
 
 double Machine::getDoubleRegister(uint16_t R) {
-  return ((double*)Register)[R + 65];
+  return ((double *)Register)[R + 65];
 }
 
 void Machine::setRegister(uint16_t R, int32_t V) {
-    #ifdef PRINTREG
-    std::cerr << "R[" << std::dec << R << "] = " << std::hex << V << ";  ";
-    #endif
-    Register[R] = V;
+#ifdef PRINTREG
+  std::cerr << "R[" << std::dec << R << "] = " << std::hex << V << ";  ";
+#endif
+  Register[R] = V;
 }
 
 void Machine::setFloatRegister(uint16_t R, float V) {
-  ((float*)Register)[R + 66] = V;
+  ((float *)Register)[R + 66] = V;
 }
 
 void Machine::setDoubleRegister(uint16_t R, double V) {
-  ((double*)Register)[R + 65] = V;
+  ((double *)Register)[R + 65] = V;
 }
 
-int32_t* Machine::getRegisterPtr() {
-  return Register;
-}
+int32_t *Machine::getRegisterPtr() { return Register; }
 
-char* Machine::getByteMemoryPtr() {
-  return DataMemory.get();
-}
+char *Machine::getByteMemoryPtr() { return DataMemory.get(); }
 
-uint32_t* Machine::getMemoryPtr() {
-  return (uint32_t*) DataMemory.get();
-}
+uint32_t *Machine::getMemoryPtr() { return (uint32_t *)DataMemory.get(); }
 
-bool Machine::isOnNativeExecution() {
-  return OnNativeExecution;
-}
+bool Machine::isOnNativeExecution() { return OnNativeExecution; }
 
-uint32_t Machine::getRegionBeingExecuted() {
-  return RegionBeingExecuted;
-}
+uint32_t Machine::getRegionBeingExecuted() { return RegionBeingExecuted; }
 
 void Machine::setOnNativeExecution(uint32_t EntryRegionAddrs) {
-  OnNativeExecution   = true;
+  OnNativeExecution = true;
   RegionBeingExecuted = EntryRegionAddrs;
 }
 
-void Machine::setOffNativeExecution() {
-  OnNativeExecution   = false;
-
-}
+void Machine::setOffNativeExecution() { OnNativeExecution = false; }
 
 uint32_t Machine::findMethod(uint32_t Addr) {
-  for (auto Method : Symbolls) 
-    if (Method.first < Addr && Method.second.second > Addr) 
+  for (auto Method : Symbolls)
+    if (Method.first < Addr && Method.second.second > Addr)
       return Method.first;
   return 0;
 }
 
-bool Machine::isMethodEntry(uint32_t Addr) {
-  return Symbolls.count(Addr) != 0;
-}
+bool Machine::isMethodEntry(uint32_t Addr) { return Symbolls.count(Addr) != 0; }
 
-uint32_t Machine::getMethodEnd(uint32_t Addr) {
-  return Symbolls[Addr].second;
-}
+uint32_t Machine::getMethodEnd(uint32_t Addr) { return Symbolls[Addr].second; }
 
 std::string Machine::getMethodName(uint32_t Addr) {
   return Symbolls[Addr].first;
@@ -250,9 +228,7 @@ std::vector<uint32_t> Machine::getVectorOfMethodEntries() {
 
 using namespace ELFIO;
 
-void Machine::reset() {
-  loadELF(BinPath);
-}
+void Machine::reset() { loadELF(BinPath); }
 
 int Machine::loadELF(const std::string ElfPath) {
   BinPath = ElfPath;
@@ -269,7 +245,7 @@ int Machine::loadELF(const std::string ElfPath) {
   bool Started = false;
   bool First = false;
   for (int i = 0; i < sec_num; ++i) {
-    section* psec = reader.sections[i];
+    section *psec = reader.sections[i];
 
     if (Started && (psec->get_flags() & 0x2) != 0) {
       TotalDataSize += psec->get_size();
@@ -283,35 +259,39 @@ int Machine::loadELF(const std::string ElfPath) {
       Started = true;
   }
 
-  allocDataMemory(AddressOffset, (TotalDataSize + stackSize + heapSize) + (4 - (TotalDataSize + stackSize + heapSize) % 4));
+  allocDataMemory(AddressOffset,
+                  (TotalDataSize + stackSize + heapSize) +
+                      (4 - (TotalDataSize + stackSize + heapSize) % 4));
 
   std::unordered_map<uint32_t, std::string> SymbolNames;
   std::set<uint32_t> SymbolStartAddresses;
 
   Started = false;
   for (int i = 0; i < sec_num; ++i) {
-    section* psec = reader.sections[i];
-    if (Started && (psec->get_flags() & 0x2) != 0 && psec->get_data() != nullptr) {
+    section *psec = reader.sections[i];
+    if (Started && (psec->get_flags() & 0x2) != 0 &&
+        psec->get_data() != nullptr) {
       addDataMemory(psec->get_address(), psec->get_size(), psec->get_data());
     }
 
     if (psec->get_name() == ".text") {
-      setCodeMemory(psec->get_address(), psec->get_size(),  psec->get_data());
+      setCodeMemory(psec->get_address(), psec->get_size(), psec->get_data());
       SymbolStartAddresses.insert(psec->get_address() + psec->get_size());
       Started = true;
     }
 
     if (psec->get_name() == ".symtab") {
       const symbol_section_accessor symbols(reader, psec);
-      std::string   name = "";
-      Elf64_Addr    value = 0;
-      Elf_Xword     size;
+      std::string name = "";
+      Elf64_Addr value = 0;
+      Elf_Xword size;
       unsigned char bind;
       unsigned char type = 0;
-      Elf_Half      section_index;
+      Elf_Half section_index;
       unsigned char other;
-      for ( unsigned int j = 0; j < symbols.get_symbols_num(); ++j ) {
-        symbols.get_symbol( j, name, value, size, bind, type, section_index, other );
+      for (unsigned int j = 0; j < symbols.get_symbols_num(); ++j) {
+        symbols.get_symbol(j, name, value, size, bind, type, section_index,
+                           other);
         if (type == 0 && name != "" && value != 0 && value < CodeMemLimit) {
           SymbolStartAddresses.insert(value);
           SymbolNames[value] = name;
@@ -320,15 +300,16 @@ int Machine::loadELF(const std::string ElfPath) {
     }
   }
 
-  for (auto I = SymbolStartAddresses.begin(); I != SymbolStartAddresses.end(); ++I)
+  for (auto I = SymbolStartAddresses.begin(); I != SymbolStartAddresses.end();
+       ++I)
     Symbolls[*I] = {SymbolNames[*I], *SymbolStartAddresses.upper_bound(*I)};
 
   for (int i = 0; i < 258; i++)
     Register[i] = 0;
 
-  uint32_t StackAddr = DataMemLimit-stackSize/4;
-  setRegister(29, StackAddr + (4 - StackAddr%4)); //StackPointer
-  setRegister(30, StackAddr + (4 - StackAddr%4)); //StackPointer
+  uint32_t StackAddr = DataMemLimit - stackSize / 4;
+  setRegister(29, StackAddr + (4 - StackAddr % 4)); // StackPointer
+  setRegister(30, StackAddr + (4 - StackAddr % 4)); // StackPointer
 
   setPC(reader.get_entry());
 
@@ -340,8 +321,10 @@ void Machine::dumpRegisters(void) {
   std::cerr << std::endl << "PC: " << std::hex << PC << "; \n";
   std::cerr << "(int32_t [258]) = {" << std::endl;
 
-  for (int i = 0; i<258; ++i) {
-    std::cerr << "  [" << std::dec << i << "] = " << "0x" << std::setw(8) << std::setfill('0') << std::hex <<  Register[i] << std::endl;
+  for (int i = 0; i < 258; ++i) {
+    std::cerr << "  [" << std::dec << i << "] = "
+              << "0x" << std::setw(8) << std::setfill('0') << std::hex
+              << Register[i] << std::endl;
   }
 
   std::cerr << "}" << std::endl;

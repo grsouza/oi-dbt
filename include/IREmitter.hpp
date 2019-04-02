@@ -4,218 +4,233 @@
 #include <OIDecoder.hpp>
 #include <machine.hpp>
 
-#include "llvm/IR/Function.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/Type.h"
-#include "llvm/Target/TargetMachine.h"
 #include "llvm-c/Core.h"
 #include "llvm-c/Disassembler.h"
 #include "llvm-c/Target.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/Target/TargetMachine.h"
 
-#include <cstdlib>
-#include <stddef.h>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <sparsepp/spp.h>
-#include <vector>
 #include <array>
-#include <unordered_map>
+#include <cstdlib>
+#include <fstream>
+#include <iomanip>
 #include <memory>
 #include <set>
+#include <sparsepp/spp.h>
+#include <sstream>
+#include <stddef.h>
+#include <unordered_map>
+#include <vector>
 
 #define __STDC_CONSTANT_MACROS // llvm complains otherwise
 #define __STDC_LIMIT_MACROS
 
-#define OIInstList std::vector<std::array<uint32_t,2>>
+#define OIInstList std::vector<std::array<uint32_t, 2>>
 
 namespace dbt {
-  class Machine;
-  class IREmitter {
-  private:
-		llvm::LLVMContext TheContext;
-		spp::sparse_hash_map<std::string, llvm::Value*> NamedValues;
-		std::unique_ptr<llvm::IRBuilder<>> Builder;
-    volatile uint64_t* CurrentNativeRegions;
+class Machine;
+class IREmitter {
+private:
+  llvm::LLVMContext TheContext;
+  spp::sparse_hash_map<std::string, llvm::Value *> NamedValues;
+  std::unique_ptr<llvm::IRBuilder<>> Builder;
+  volatile uint64_t *CurrentNativeRegions;
 
-    uint16_t ldireg;
-    llvm::Value* IntRegisterBank[64];
-    llvm::Value* FloatRegisterBank[64];
-    llvm::Value* DoubleRegisterBank[64];
+  uint16_t ldireg;
+  llvm::Value *IntRegisterBank[64];
+  llvm::Value *FloatRegisterBank[64];
+  llvm::Value *DoubleRegisterBank[64];
 
-    llvm::BasicBlock* RegionEntry = nullptr;
+  llvm::BasicBlock *RegionEntry = nullptr;
 
-    spp::sparse_hash_map<uint32_t, std::set<uint32_t>> CallTargetList;
-    std::set<uint32_t> ReturnPoints;
+  spp::sparse_hash_map<uint32_t, std::set<uint32_t>> CallTargetList;
+  std::set<uint32_t> ReturnPoints;
 
-    llvm::Module* Mod;
+  llvm::Module *Mod;
 
-    uint32_t DataMemOffset;
-    uint32_t CurrentEntryAddrs;
-    dbt::OIDecoder::OIInst LastEmittedInst;
-    uint32_t LastEmittedAddrs;
+  uint32_t DataMemOffset;
+  uint32_t CurrentEntryAddrs;
+  dbt::OIDecoder::OIInst LastEmittedInst;
+  uint32_t LastEmittedAddrs;
 
-    llvm::Value* FirstInstGen = nullptr;
-    void addFirstInstToMap(uint32_t);
+  llvm::Value *FirstInstGen = nullptr;
+  void addFirstInstToMap(uint32_t);
 
-    void addMultipleEntriesSupport(std::vector<uint32_t>&, llvm::BasicBlock*, llvm::Function*);
+  void addMultipleEntriesSupport(std::vector<uint32_t> &, llvm::BasicBlock *,
+                                 llvm::Function *);
 
-    llvm::Value* ReturnAddrs;
-    llvm::BasicBlock* Trampoline;
+  llvm::Value *ReturnAddrs;
+  llvm::BasicBlock *Trampoline;
 
-    dbt::Machine* Mach;
+  dbt::Machine *Mach;
 
-    spp::sparse_hash_map<uint32_t, llvm::Value*> IRMemoryMap;
-    spp::sparse_hash_map<uint32_t, llvm::BranchInst*> IRBranchMap;
-    spp::sparse_hash_map<uint32_t, llvm::ReturnInst*> IRIBranchMap;
-  public:
-    enum RegType {
-      Int, Float, Double, Int64
-    };
-    void setIfNotTheFirstInstGen(llvm::Value*);
+  spp::sparse_hash_map<uint32_t, llvm::Value *> IRMemoryMap;
+  spp::sparse_hash_map<uint32_t, llvm::BranchInst *> IRBranchMap;
+  spp::sparse_hash_map<uint32_t, llvm::ReturnInst *> IRIBranchMap;
 
-    void cleanCFG();
-    void updateBranchTarget(uint32_t, std::array<uint32_t, 2>);
-    void improveIndirectBranch(uint32_t, uint32_t);
-    void processBranchesTargets(const OIInstList&);
-    void generateInstIR(const uint32_t, const OIDecoder::OIInst);
+public:
+  enum RegType { Int, Float, Double, Int64 };
+  void setIfNotTheFirstInstGen(llvm::Value *);
 
-    llvm::Value* genDataVecPtr(llvm::Value*, llvm::Function*, llvm::Type*, unsigned);
-    llvm::Value* genDataMemVecPtr(llvm::Value*, llvm::Function*);
-    llvm::Value* genDataByteVecPtr(llvm::Value*, llvm::Function*);
-    llvm::Value* genDataHalfVecPtr(llvm::Value*, llvm::Function*);
-    llvm::Value* genDataWordVecPtr(llvm::Value*, llvm::Function*);
-    llvm::Value* genRegisterVecPtr(uint16_t, llvm::Function*, RegType);
-    llvm::Value* genRegisterVecPtr(llvm::Value*, llvm::Function*, RegType);
+  void cleanCFG();
+  void updateBranchTarget(uint32_t, std::array<uint32_t, 2>);
+  void improveIndirectBranch(uint32_t, uint32_t);
+  void processBranchesTargets(const OIInstList &);
+  void generateInstIR(const uint32_t, const OIDecoder::OIInst);
 
-    llvm::Value* genImm(uint32_t);
+  llvm::Value *genDataVecPtr(llvm::Value *, llvm::Function *, llvm::Type *,
+                             unsigned);
+  llvm::Value *genDataMemVecPtr(llvm::Value *, llvm::Function *);
+  llvm::Value *genDataByteVecPtr(llvm::Value *, llvm::Function *);
+  llvm::Value *genDataHalfVecPtr(llvm::Value *, llvm::Function *);
+  llvm::Value *genDataWordVecPtr(llvm::Value *, llvm::Function *);
+  llvm::Value *genRegisterVecPtr(uint16_t, llvm::Function *, RegType);
+  llvm::Value *genRegisterVecPtr(llvm::Value *, llvm::Function *, RegType);
 
-    llvm::Value* genLoadRegister(uint16_t, llvm::Function*, RegType Type = RegType::Int);
-    llvm::Value* genStoreRegister(uint16_t, llvm::Value*, llvm::Function*, RegType Type = RegType::Int);
+  llvm::Value *genImm(uint32_t);
 
-    llvm::Value* genLogicalOr(llvm::Value*, llvm::Value*, llvm::Function*);
-    llvm::Value* genLogicalAnd(llvm::Value*, llvm::Value*, llvm::Function*);
+  llvm::Value *genLoadRegister(uint16_t, llvm::Function *,
+                               RegType Type = RegType::Int);
+  llvm::Value *genStoreRegister(uint16_t, llvm::Value *, llvm::Function *,
+                                RegType Type = RegType::Int);
 
-    void insertDirectExit(uint32_t);
+  llvm::Value *genLogicalOr(llvm::Value *, llvm::Value *, llvm::Function *);
+  llvm::Value *genLogicalAnd(llvm::Value *, llvm::Value *, llvm::Function *);
 
-		IREmitter() {
-			Builder = std::make_unique<llvm::IRBuilder<>>(TheContext);
-    };
+  void insertDirectExit(uint32_t);
 
-    void generateRegionIR(std::vector<uint32_t>&, const OIInstList&, uint32_t, dbt::Machine&,
-        llvm::TargetMachine&, volatile uint64_t* NativeRegions, llvm::Module*);
+  IREmitter() { Builder = std::make_unique<llvm::IRBuilder<>>(TheContext); };
 
-    static size_t getAssemblySize(const void* func) {
-      char outline[1024];
-      size_t Size = 0;
-      uint64_t pc;
-      const uint64_t extent = 96*1024;
-      const uint8_t *bytes = (const uint8_t *) func;
+  void generateRegionIR(std::vector<uint32_t> &, const OIInstList &, uint32_t,
+                        dbt::Machine &, llvm::TargetMachine &,
+                        volatile uint64_t *NativeRegions, llvm::Module *);
 
-      //Initialize LLVM targets
-      LLVMInitializeNativeAsmParser();
-      LLVMInitializeNativeAsmPrinter();
-      LLVMInitializeNativeDisassembler();
-      LLVMInitializeNativeTarget();
+  static size_t getAssemblySize(const void *func) {
+    char outline[1024];
+    size_t Size = 0;
+    uint64_t pc;
+    const uint64_t extent = 96 * 1024;
+    const uint8_t *bytes = (const uint8_t *)func;
 
-      LLVMDisasmContextRef D = LLVMCreateDisasm(LLVM_HOST_TRIPLE, NULL, 0, NULL, NULL);
+    // Initialize LLVM targets
+    LLVMInitializeNativeAsmParser();
+    LLVMInitializeNativeAsmPrinter();
+    LLVMInitializeNativeDisassembler();
+    LLVMInitializeNativeTarget();
 
-      for(pc = 0; pc<extent; pc+=Size) {
-        unsigned int i;
-        memset(outline, 0, sizeof(outline));
-        Size = LLVMDisasmInstruction(D, (uint8_t *)bytes + pc, extent - pc, 0, outline, sizeof (outline));
-        if (!Size) {
-          break;
-        }
+    LLVMDisasmContextRef D =
+        LLVMCreateDisasm(LLVM_HOST_TRIPLE, NULL, 0, NULL, NULL);
 
-        if(static_cast<int>(bytes[pc]) == 0xc3) {
-          break;
-        }
+    for (pc = 0; pc < extent; pc += Size) {
+      unsigned int i;
+      memset(outline, 0, sizeof(outline));
+      Size = LLVMDisasmInstruction(D, (uint8_t *)bytes + pc, extent - pc, 0,
+                                   outline, sizeof(outline));
+      if (!Size) {
+        break;
       }
 
-      LLVMDisasmDispose(D);
-
-      return pc;
+      if (static_cast<int>(bytes[pc]) == 0xc3) {
+        break;
+      }
     }
 
-    static size_t disassemble(const void* func, std::ostream &buffer) {
-      char outline[1024];
-      size_t Size = 0;
-      uint64_t pc;
-      const uint64_t extent = 96*1024;
-      const uint8_t *bytes = (const uint8_t *) func;
+    LLVMDisasmDispose(D);
 
-      //Initialize LLVM targets
-      LLVMInitializeNativeAsmParser();
-      LLVMInitializeNativeAsmPrinter();
-      LLVMInitializeNativeDisassembler();
-      LLVMInitializeNativeTarget();
+    return pc;
+  }
 
-      LLVMDisasmContextRef D = LLVMCreateDisasm(LLVM_HOST_TRIPLE, NULL, 0, NULL, NULL);
+  static size_t disassemble(const void *func, std::ostream &buffer) {
+    char outline[1024];
+    size_t Size = 0;
+    uint64_t pc;
+    const uint64_t extent = 96 * 1024;
+    const uint8_t *bytes = (const uint8_t *)func;
 
-      if (!D) {
-          buffer << "Error: Could not create disassembler for triple " << LLVM_HOST_TRIPLE << '\n';
-          return -1;
-      }
+    // Initialize LLVM targets
+    LLVMInitializeNativeAsmParser();
+    LLVMInitializeNativeAsmPrinter();
+    LLVMInitializeNativeDisassembler();
+    LLVMInitializeNativeTarget();
 
-      for(pc = 0; pc<extent; pc+=Size) {
-        unsigned int i;
-        memset(outline, 0, sizeof(outline));
-        // Print address.  We use addresses relative to the start of the function, so that between runs.
-        buffer << "<" << std::hex << static_cast<const void*>(bytes) << "+" << std::hex << std::setw(4) << std::setfill('0') << (unsigned long) pc << ">:\t";
-        Size = LLVMDisasmInstruction(D, (uint8_t *)bytes + pc, extent - pc, 0, outline, sizeof (outline));
+    LLVMDisasmContextRef D =
+        LLVMCreateDisasm(LLVM_HOST_TRIPLE, NULL, 0, NULL, NULL);
 
-        if (!Size) {
-          buffer << "invalid at \n" << pc++;
-          break;
-        }
-        //Output the bytes in hexidecimal format.
-        for (i = 0; i < Size; ++i) {
-          buffer << std::hex << std::setfill('0') << std::setw(2) << static_cast<int> (bytes[pc + i]);
-        }
-
-        buffer << std::setfill(' ') << std::setw(16-Size) <<  " ";
-
-        //Print the instruction.
-        buffer << outline << '\n';
-
-        if(static_cast<int>(bytes[pc]) == 0xc3) {
-          buffer << "RETURN INSTRUCTION BREAK (0xc3)" << std::endl;
-          break;
-        }
-      }
-
-      if (pc >= extent)  buffer << "disassembly larger than " << extent << " bytes\n";
-
-      buffer << '\n';
-
-      LLVMDisasmDispose(D);
-
-      // Print GDB command, useful to verify output.
-      buffer << "disassemble " << static_cast<const void*>(bytes) << ' ' << static_cast<const void*>(bytes + pc) << '\n';
-
-      return pc;
+    if (!D) {
+      buffer << "Error: Could not create disassembler for triple "
+             << LLVM_HOST_TRIPLE << '\n';
+      return -1;
     }
 
-    static size_t regionDump (const void* func, std::ostream &buffer, size_t size) {
-      const uint8_t *bytes = (const uint8_t *) func;
+    for (pc = 0; pc < extent; pc += Size) {
+      unsigned int i;
+      memset(outline, 0, sizeof(outline));
+      // Print address.  We use addresses relative to the start of the function,
+      // so that between runs.
+      buffer << "<" << std::hex << static_cast<const void *>(bytes) << "+"
+             << std::hex << std::setw(4) << std::setfill('0')
+             << (unsigned long)pc << ">:\t";
+      Size = LLVMDisasmInstruction(D, (uint8_t *)bytes + pc, extent - pc, 0,
+                                   outline, sizeof(outline));
 
-      for (int i=0; i<size; i++) {
-        if(i % 16 == 0)
-          buffer << "\n" << std::setw(4) << std::hex << i << ":\t";
-        else if(i%8 == 0)
-          buffer << "| ";
-
-        buffer << std::hex << std::setfill('0') << std::setw(2) << static_cast<unsigned int> (bytes[i]) << " ";
+      if (!Size) {
+        buffer << "invalid at \n" << pc++;
+        break;
+      }
+      // Output the bytes in hexidecimal format.
+      for (i = 0; i < Size; ++i) {
+        buffer << std::hex << std::setfill('0') << std::setw(2)
+               << static_cast<int>(bytes[pc + i]);
       }
 
-      buffer << std::endl;
-      return 0;
+      buffer << std::setfill(' ') << std::setw(16 - Size) << " ";
+
+      // Print the instruction.
+      buffer << outline << '\n';
+
+      if (static_cast<int>(bytes[pc]) == 0xc3) {
+        buffer << "RETURN INSTRUCTION BREAK (0xc3)" << std::endl;
+        break;
+      }
     }
-  };
-}
+
+    if (pc >= extent)
+      buffer << "disassembly larger than " << extent << " bytes\n";
+
+    buffer << '\n';
+
+    LLVMDisasmDispose(D);
+
+    // Print GDB command, useful to verify output.
+    buffer << "disassemble " << static_cast<const void *>(bytes) << ' '
+           << static_cast<const void *>(bytes + pc) << '\n';
+
+    return pc;
+  }
+
+  static size_t regionDump(const void *func, std::ostream &buffer,
+                           size_t size) {
+    const uint8_t *bytes = (const uint8_t *)func;
+
+    for (int i = 0; i < size; i++) {
+      if (i % 16 == 0)
+        buffer << "\n" << std::setw(4) << std::hex << i << ":\t";
+      else if (i % 8 == 0)
+        buffer << "| ";
+
+      buffer << std::hex << std::setfill('0') << std::setw(2)
+             << static_cast<unsigned int>(bytes[i]) << " ";
+    }
+
+    buffer << std::endl;
+    return 0;
+  }
+};
+} // namespace dbt
 
 #endif

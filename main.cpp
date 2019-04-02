@@ -12,6 +12,7 @@
 #include <timer.hpp>
 
 clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file", "");
+clarg::argString DBFlag("-db", "Database file path", "database.db");
 clarg::argString
     TestFlag("-testmode",
              "Optimizer only one region with optimization sequence provided",
@@ -200,7 +201,8 @@ int main(int argc, char **argv) {
     return 2;
   }
 
-  dbt::AOS A = dbt::AOS::create(AOSFlag.get_value(), BinaryFlag.get_value());
+  dbt::AOS A = dbt::AOS::create(AOSFlag.get_value(), BinaryFlag.get_value(),
+                                DBFlag.get_value());
   dbt::Manager TheManager(M.getDataMemOffset(), M, A, VerboseFlag.was_set());
 
   if (LockModeFlag.get_value() == true) {

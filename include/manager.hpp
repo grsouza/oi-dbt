@@ -89,18 +89,23 @@ private:
   bool IsToLoadRegions = false;
   bool IsToDoWholeCompilation = false;
   bool IsToLoadBCFormat = true;
+  bool IsToInline = false;
 
   llvm::Module *loadRegionFromFile(std::string);
   void loadRegionsFromFiles();
 
-  std::ofstream *PerfMapFile;
+  void inlineCall(uint32_t, uint32_t, OIInstList &, std::set<uint32_t> &,
+                  llvm::Module *);
 
   void runPipeline();
+  std::ofstream *PerfMapFile;
 
 public:
-  Manager(uint32_t DMO, dbt::Machine &M, dbt::AOS &A, bool VO = false)
+  Manager(uint32_t DMO, dbt::Machine &M, dbt::AOS &A, bool VO = false,
+          bool Inline = false)
       : DataMemOffset(DMO), isRunning(true), isFinished(false),
-        VerboseOutput(VO), TheMachine(M), TheAOS(A), NumOfOIRegions(0) {
+        VerboseOutput(VO), TheMachine(M), TheAOS(A), NumOfOIRegions(0),
+        IsToInline(Inline) {
     memset((void *)NativeRegions, 0, sizeof(NativeRegions));
   }
 
@@ -165,6 +170,17 @@ public:
 
   bool getRegionRecording(void) { return static_cast<bool>(isRegionRecorging); }
 
+  bool isRegionEntry(uint32_t EntryAddress) {
+    if (NativeRegions[EntryAddress] != 0)
+      return true;
+    else {
+      OIRegionsMtx.lock_shared();
+      bool hasRegion = OIRegions.count(EntryAddress) != 0;
+      OIRegionsMtx.unlock_shared();
+      return hasRegion;
+    }
+  }
+
   void setRegionRecorging(bool value) { isRegionRecorging = value; }
 
   unsigned getLLVMCompiled(void) { return LLVMCompiled; }
@@ -185,11 +201,6 @@ public:
   bool addOIRegion(uint32_t, OIInstList);
 
   int32_t jumpToRegion(uint32_t);
-
-  bool isRegionEntry(uint32_t EntryAddress) {
-    return OIRegions.count(EntryAddress) != 0 ||
-           NativeRegions[EntryAddress] != 0;
-  }
 
   inline bool isNativeRegionEntry(uint32_t EntryAddress) {
     return (NativeRegions[EntryAddress] != 0);

@@ -30,7 +30,7 @@ void dbt::IREmitter::generateInstIR(const uint32_t GuestAddr,
   LLVMContext &C = Func->getContext();
   int instructions = 10;
   auto lastFuncInst = inst_end(Func);
-  SyscallIREmitter syscallIR(*this);
+  // SyscallIREmitter syscallIR(*this);
 
   // If the address is not continuos and the last inst was not a jump, split the
   // BB
@@ -1238,16 +1238,31 @@ void dbt::IREmitter::generateInstIR(const uint32_t GuestAddr,
 
   case dbt::OIDecoder::Call: {
     auto GuestTarget = ((GuestAddr & 0xF0000000) | (Inst.Addrs << 2));
-    CallTargetList[GuestTarget].insert(GuestAddr);
-
     Value *Res = genStoreRegister(31, genImm(GuestAddr + 4), Func);
 
-    BasicBlock *BB = BasicBlock::Create(TheContext, "AfterCall", Func);
-    BranchInst *Br;
+    llvm::Function *Callee =
+        Mod->getFunction("r" + std::to_string(GuestTarget));
+    if (Callee) {
+      Value *NextAddr =
+          Builder->CreateCall(Callee, {Func->arg_begin(), Func->arg_begin() + 1,
+                                       genImm(GuestTarget)});
+      Value *CmpRes = Builder->CreateICmpEQ(genImm(GuestTarget), NextAddr);
+      BasicBlock *AddrOk = BasicBlock::Create(TheContext, "CallOk", Func);
+      BasicBlock *AddrWrong = BasicBlock::Create(TheContext, "CallWrong", Func);
+      Builder->CreateCondBr(CmpRes, AddrOk, AddrWrong);
+      Builder->SetInsertPoint(AddrWrong);
+      Builder->CreateRet(NextAddr);
+      Builder->SetInsertPoint(AddrOk);
+    } else {
+      CallTargetList[GuestTarget].insert(GuestAddr);
 
-    Br = Builder->CreateBr(BB);
-    Builder->SetInsertPoint(BB);
-    IRBranchMap[GuestAddr] = Br;
+      BasicBlock *BB = BasicBlock::Create(TheContext, "AfterCall", Func);
+      BranchInst *Br;
+
+      Br = Builder->CreateBr(BB);
+      Builder->SetInsertPoint(BB);
+      IRBranchMap[GuestAddr] = Br;
+    }
     setIfNotTheFirstInstGen(Res);
     break;
   }
@@ -1323,6 +1338,9 @@ void dbt::IREmitter::generateInstIR(const uint32_t GuestAddr,
 
 void dbt::IREmitter::updateBranchTarget(uint32_t GuestAddr,
                                         std::array<uint32_t, 2> Tgts) {
+  if (!IRBranchMap[GuestAddr])
+    return;
+
   Function *F = Builder->GetInsertBlock()->getParent();
 
   for (int i = 0; i < 2; i++) {
@@ -1355,7 +1373,6 @@ void dbt::IREmitter::improveIndirectBranch(uint32_t GuestAddr,
 
   if (FunctionEntry == 0 || CallTargetList.count(FunctionEntry) == 0 ||
       CallTargetList[FunctionEntry].size() == 0) {
-
     if (Trampoline) {
       Value *TargetAddrs = IRIBranchMap[GuestAddr]->getReturnValue();
       Instruction *RetInst = IRIBranchMap[GuestAddr];
@@ -1417,8 +1434,8 @@ void dbt::IREmitter::processBranchesTargets(const OIInstList &OIRegion) {
     else
       NextAddrs = 0;
 
-    OIDecoder::OIInst Inst = OIDecoder::decode(Pair[1]);
     uint32_t GuestAddr = Pair[0];
+    dbt::OIDecoder::OIInst Inst = dbt::OIDecoder::decode(Pair[1]);
 
     if (OIDecoder::isControlFlowInst(Inst))
       updateBranchTarget(GuestAddr,
@@ -1487,7 +1504,7 @@ void dbt::IREmitter::addMultipleEntriesSupport(
   }
 }
 
-void dbt::IREmitter::generateRegionIR(std::vector<uint32_t> &EntryAddresses,
+void dbt::IREmitter::generateRegionIR(std::vector<uint32_t> EntryAddresses,
                                       const OIInstList &OIRegion,
                                       uint32_t MemOffset, dbt::Machine &M,
                                       TargetMachine &TM,
@@ -1500,7 +1517,8 @@ void dbt::IREmitter::generateRegionIR(std::vector<uint32_t> &EntryAddresses,
   CurrentNativeRegions = NativeRegions;
   LastEmittedAddrs = 0;
   TheModule->setDataLayout(TM.createDataLayout());
-  TheModule->setTargetTriple(TM.getTargetTriple().str());
+  TheModule->setTargetTriple(
+      "i686-unkown-linux"); // TM.getTargetTriple().str());
 
   IRMemoryMap.clear();
   IRBranchMap.clear();
@@ -1520,7 +1538,7 @@ void dbt::IREmitter::generateRegionIR(std::vector<uint32_t> &EntryAddresses,
   Function *F = cast<Function>(
       Mod->getOrInsertFunction("r" + std::to_string(CurrentEntryAddrs), FT));
 
-  F->setCallingConv(CallingConv::Fast);
+  //  F->setCallingConv(CallingConv::Fast);
   F->addAttribute(1, Attribute::NoAlias);
   F->addAttribute(1, Attribute::NoCapture);
   F->addAttribute(2, Attribute::NoAlias);
@@ -1545,7 +1563,7 @@ void dbt::IREmitter::generateRegionIR(std::vector<uint32_t> &EntryAddresses,
     IRMemoryMap[Pair[0]] = nullptr;
 
   for (auto Pair : OIRegion) {
-    OIDecoder::OIInst Inst = OIDecoder::decode(Pair[1]);
+    dbt::OIDecoder::OIInst Inst = dbt::OIDecoder::decode(Pair[1]);
     generateInstIR(Pair[0], Inst);
   }
 

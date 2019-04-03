@@ -11,9 +11,7 @@
 #include <sparsepp/spp.h>
 #include <vector>
 
-#ifndef OIInstList
 #define OIInstList std::vector<std::array<uint32_t, 2>>
-#endif
 
 namespace dbt {
 class Manager;
@@ -32,13 +30,11 @@ protected:
 
   uint32_t LastTarget;
 
-  unsigned RegionLimitSize = -1;
-  unsigned RegionMaxSize = 1000;
-
   Manager &TheManager;
 
   void startRegionFormation(uint32_t);
   bool finishRegionFormation();
+  bool isBackwardLoop(uint32_t);
   void insertInstruction(uint32_t, uint32_t);
   void insertInstruction(std::array<uint32_t, 2> &);
   bool hasRecordedAddrs(uint32_t);
@@ -54,7 +50,7 @@ public:
     HotnessThreshold = threshold;
   };
 
-  void setRegionLimitSize(unsigned Limit) { RegionLimitSize = Limit; };
+  void setRegionLimitSize(unsigned Limit){};
 
   virtual void onBranch(dbt::Machine &) = 0;
 };
@@ -65,31 +61,6 @@ class NET : public RFT {
 public:
   NET(Manager &M, bool Relaxed = false) : RFT(M), IsRelaxed(Relaxed){};
 
-  void onBranch(dbt::Machine &);
-};
-
-class MethodBased : public RFT {
-  std::set<std::string> ToCompile;
-  bool CompileOnlyHot = false;
-
-public:
-  MethodBased(Manager &M, std::string PathToTCList = "") : RFT(M) {
-    if (PathToTCList != "") {
-      std::ifstream infile(PathToTCList);
-      double FuncCoverage;
-      std::string FuncName;
-      double TotalCoverage = 0;
-      while (infile >> FuncCoverage >> FuncName) {
-        ToCompile.insert(FuncName);
-        CompileOnlyHot = true;
-        TotalCoverage += FuncCoverage;
-        if (TotalCoverage > 98)
-          break;
-      }
-    }
-  };
-
-  void addFunctionToCompile(uint32_t, Machine &);
   void onBranch(dbt::Machine &);
 };
 
@@ -122,12 +93,13 @@ class NETPlus : public RFT {
   void expandAndFinish(Machine &);
 
   bool IsExtendedRelaxed;
+  bool IsCallExtended;
 
   std::vector<uint32_t> ShadowStack;
 
 public:
-  NETPlus(Manager &M, bool ExtRelaxed = false)
-      : RFT(M), IsExtendedRelaxed(ExtRelaxed){};
+  NETPlus(Manager &M, bool ExtRelaxed = false, bool CallExtend = false)
+      : RFT(M), IsExtendedRelaxed(ExtRelaxed), IsCallExtended(CallExtend){};
 
   void onBranch(dbt::Machine &);
 };

@@ -8,11 +8,6 @@
 
 unsigned Total = 0;
 void dbt::RFT::insertInstruction(uint32_t Addrs, uint32_t Opcode) {
-  if (Total > RegionLimitSize) {
-    finishRegionFormation();
-    return;
-  }
-
   if (!hasRecordedAddrs(Addrs))
     OIRegion.push_back({Addrs, Opcode});
 }
@@ -21,11 +16,17 @@ void dbt::RFT::insertInstruction(std::array<uint32_t, 2> &Inst) {
   insertInstruction(Inst[0], Inst[1]);
 }
 
+bool dbt::RFT::isBackwardLoop(uint32_t PC) {
+  return OIRegion.size() == 0 ? false : PC < OIRegion.back()[0];  
+}
+
 void dbt::RFT::startRegionFormation(uint32_t PC) {
-  Recording = true;
-  RecordingEntry = PC;
-  OIRegion.clear();
-  ExecFreq[PC] = 0;
+  if (TheManager.getNumOfOIRegions() == 0) {
+    Recording = true;
+    RecordingEntry = PC;
+    OIRegion.clear();
+    ExecFreq[PC] = 0;
+  }
 }
 
 bool dbt::RFT::hasRecordedAddrs(uint32_t Addrs) {

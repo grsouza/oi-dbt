@@ -31,8 +31,9 @@ extern dbt::Machine M;
 // LSeek **
 // Fstat **
 
-static Function *exit_prototype(LLVMContext &C, Module *mod) {
-  std::array<Type *, 1> ArgsType = {Type::getInt32Ty(C)};
+/*static Function* exit_prototype(LLVMContext& C, Module* mod)
+{
+  std::array<Type*, 1> ArgsType = {Type::getInt32Ty(C)};
   FunctionType *FT = FunctionType::get(Type::getVoidTy(C), ArgsType, false);
   Function *func = cast<Function>(mod->getOrInsertFunction("exit", FT));
 
@@ -157,38 +158,31 @@ void SyscallIREmitter::generateSyscallIR(LLVMContext &TheContext,
   Module *TheModule = Func->getParent();
   auto lastFuncInst = inst_end(Func);
 
-  // Basic Blocks for system calls
-  BasicBlock *BBwrite = BasicBlock::Create(TheContext, "write_syscall", Func);
-  BasicBlock *BBread = BasicBlock::Create(TheContext, "read_syscall", Func);
+  //Basic Blocks for system calls
+  BasicBlock* BBwrite   = BasicBlock::Create(TheContext, "write_syscall", Func);
+  BasicBlock* BBread    = BasicBlock::Create(TheContext, "read_syscall", Func);
   /*BasicBlock* BBopen    = BasicBlock::Create(TheContext, "open_syscall",
-  Func); BasicBlock* BBclose   = BasicBlock::Create(TheContext, "close_syscall",
-  Func); BasicBlock* BBcreat   = BasicBlock::Create(TheContext, "creat_syscall",
-  Func); BasicBlock* BBfstat   = BasicBlock::Create(TheContext, "fstat_syscall",
-  Func); BasicBlock* BBlseek   = BasicBlock::Create(TheContext, "lseek_syscall",
-  Func);
-  */
-  BasicBlock *BBelse =
-      BasicBlock::Create(TheContext, "interpret_syscall", Func);
-  BasicBlock *MergeBB =
-      BasicBlock::Create(TheContext, "continue_syscall", Func);
+Func); BasicBlock* BBclose   = BasicBlock::Create(TheContext, "close_syscall",
+Func); BasicBlock* BBcreat   = BasicBlock::Create(TheContext, "creat_syscall",
+Func); BasicBlock* BBfstat   = BasicBlock::Create(TheContext, "fstat_syscall",
+Func); BasicBlock* BBlseek   = BasicBlock::Create(TheContext, "lseek_syscall",
+Func);
+  *//*BasicBlock* BBelse    = BasicBlock::Create(TheContext, "interpret_syscall", Func);
+  BasicBlock* MergeBB   = BasicBlock::Create(TheContext, "continue_syscall", Func);
 
-  // Default Parameters
-  Value *SysTy =
-      Builder->CreateSub(emitter.genLoadRegister(4, Func, emitter.RegType::Int),
-                         emitter.genImm(4000));
-  Argument *ArgIntRegPtr = Func->arg_begin() + 1;
-  Value *CastedMemPtr = ArgIntRegPtr;
-  Value *MemoryOffsetPtr = Builder->CreateGEP(
-      CastedMemPtr, emitter.genLoadRegister(6, Func, emitter.RegType::Int));
-  Value *MemoryOffsetPtr2 = Builder->CreateGEP(
-      CastedMemPtr, emitter.genLoadRegister(5, Func, emitter.RegType::Int));
-  Value *R5 = emitter.genLoadRegister(5, Func, emitter.RegType::Int);
-  Value *R6 = emitter.genLoadRegister(6, Func, emitter.RegType::Int);
-  Value *R7 = emitter.genLoadRegister(7, Func, emitter.RegType::Int);
 
-  // Condition Write
-  Value *Res = Builder->CreateICmpEQ(
-      SysTy, emitter.genImm(LinuxSyscallManager::SyscallType::Write));
+  //Default Parameters
+  Value* SysTy              =   Builder->CreateSub(emitter.genLoadRegister(4, Func, emitter.RegType::Int), emitter.genImm(4000));
+  Argument *ArgIntRegPtr    =   Func->arg_begin()+1;
+  Value* CastedMemPtr       =   ArgIntRegPtr;
+  Value* MemoryOffsetPtr    =   Builder->CreateGEP(CastedMemPtr, emitter.genLoadRegister(6, Func, emitter.RegType::Int));
+  Value* MemoryOffsetPtr2   =   Builder->CreateGEP(CastedMemPtr, emitter.genLoadRegister(5, Func, emitter.RegType::Int));
+  Value* R5                 =   emitter.genLoadRegister(5, Func, emitter.RegType::Int);
+  Value* R6                 =   emitter.genLoadRegister(6, Func, emitter.RegType::Int);
+  Value* R7                 =   emitter.genLoadRegister(7, Func, emitter.RegType::Int);
+
+  //Condition Write
+  Value* Res = Builder->CreateICmpEQ(SysTy, emitter.genImm(LinuxSyscallManager::SyscallType::Write));
   Builder->CreateCondBr(Res, BBwrite, BBread);
   emitter.setIfNotTheFirstInstGen(Res);
 
@@ -220,91 +214,21 @@ void SyscallIREmitter::generateSyscallIR(LLVMContext &TheContext,
 
     Builder->CreateBr(MergeBB);
   }
-  /*
-    Builder->SetInsertPoint(BBopen);
-    {
-      BasicBlock* BB      =  BasicBlock::Create(TheContext, "", Func);
 
-      Res = Builder->CreateICmpEQ(SysTy,
-    emitter.genImm(LinuxSyscallManager::SyscallType::Open));
-      Builder->CreateCondBr(Res, BB, BBclose);
+  Builder->SetInsertPoint(BBlseek);
+  {
+    BasicBlock* BB      =  BasicBlock::Create(TheContext, "", Func);
+    Res = Builder->CreateICmpEQ(SysTy, emitter.genImm(LinuxSyscallManager::SyscallType::Lseek));
+    Builder->CreateCondBr(Res, BB, BBelse);
 
-      Builder->SetInsertPoint(BB);
-      Function* open_func  =  open_prototype(TheContext, TheModule);
-      BasicBlock* BB1      =  BasicBlock::Create(TheContext, "", Func);
-      BasicBlock* BB2      =  BasicBlock::Create(TheContext, "", Func);
-      Value* Comp          =  Builder->CreateICmpULT(R6, emitter.genImm(3));
-      Builder->CreateCondBr(Comp, BB1, BB2);
+    Builder->SetInsertPoint(BB);
+    Function* lseek_func    =   lseek_prototype(TheContext, TheModule);
+    Value* Ret              =   Builder->CreateCall(lseek_func, {R5, R6, R7});
+    emitter.genStoreRegister(2, Ret, Func, emitter.RegType::Int);
+    Builder->CreateBr(MergeBB);
+  }
 
-      //Open for read
-      Builder->SetInsertPoint(BB1);
-      Value* Ret          =  Builder->CreateCall(open_func, {MemoryOffsetPtr2,
-    R6}); emitter.genStoreRegister(2, Ret, Func, emitter.RegType::Int);
-      Builder->CreateBr(MergeBB);
-
-      Builder->SetInsertPoint(BB2);
-      Value* ValueWrite   =  emitter.genLogicalOr(R6, emitter.genImm(O_CREAT),
-    Func); Ret                 =  Builder->CreateCall(open_func,
-    {MemoryOffsetPtr2, ValueWrite}); emitter.genStoreRegister(2, Ret, Func,
-    emitter.RegType::Int); Builder->CreateBr(MergeBB);
-    }
-
-    Builder->SetInsertPoint(BBclose);
-    {
-      BasicBlock* BB      =  BasicBlock::Create(TheContext, "", Func);
-      Res = Builder->CreateICmpEQ(SysTy,
-    emitter.genImm(LinuxSyscallManager::SyscallType::Close));
-      Builder->CreateCondBr(Res, BB, BBcreat);
-
-      Builder->SetInsertPoint(BB);
-      Function* close_func    =   close_prototype(TheContext, TheModule);
-      Value* Ret              =   Builder->CreateCall(close_func, {R5});
-      emitter.genStoreRegister(2, Ret, Func, emitter.RegType::Int);
-      Builder->CreateBr(MergeBB);
-    }
-
-    Builder->SetInsertPoint(BBcreat);
-    {
-      BasicBlock* BB      =  BasicBlock::Create(TheContext, "", Func);
-      Res = Builder->CreateICmpEQ(SysTy,
-    emitter.genImm(LinuxSyscallManager::SyscallType::Creat));
-      Builder->CreateCondBr(Res, BB, BBfstat);
-
-      Builder->SetInsertPoint(BB);
-      Function* creat_func    =   creat_prototype(TheContext, TheModule);
-      Value* Ret              =   Builder->CreateCall(creat_func,
-    {MemoryOffsetPtr2, R6}); emitter.genStoreRegister(2, Ret, Func,
-    emitter.RegType::Int); Builder->CreateBr(MergeBB);
-    }
-
-    Builder->SetInsertPoint(BBfstat);
-    {
-      BasicBlock* BB      =  BasicBlock::Create(TheContext, "", Func);
-      Res = Builder->CreateICmpEQ(SysTy,
-    emitter.genImm(LinuxSyscallManager::SyscallType::Fstat));
-      Builder->CreateCondBr(Res, BB, BBlseek);
-
-      Builder->SetInsertPoint(BB);
-      //Function* fstat_func    =   fstat_prototype(TheContext, TheModule);
-      emitter.genStoreRegister(2, emitter.genImm(-1), Func,
-    emitter.RegType::Int); Builder->CreateBr(MergeBB);
-    }
-
-    Builder->SetInsertPoint(BBlseek);
-    {
-      BasicBlock* BB      =  BasicBlock::Create(TheContext, "", Func);
-      Res = Builder->CreateICmpEQ(SysTy,
-    emitter.genImm(LinuxSyscallManager::SyscallType::Lseek));
-      Builder->CreateCondBr(Res, BB, BBelse);
-
-      Builder->SetInsertPoint(BB);
-      Function* lseek_func    =   lseek_prototype(TheContext, TheModule);
-      Value* Ret              =   Builder->CreateCall(lseek_func, {R5, R6, R7});
-      emitter.genStoreRegister(2, Ret, Func, emitter.RegType::Int);
-      Builder->CreateBr(MergeBB);
-    }*/
-
-  // Interpret Syscall
+  //Interpret Syscall
   Builder->SetInsertPoint(BBelse);
   {
     // setIfNotTheFirstInstGen(Res);
@@ -319,4 +243,4 @@ void SyscallIREmitter::generateSyscallIR(LLVMContext &TheContext,
 
   // End of block
   Builder->SetInsertPoint(MergeBB);
-}
+}*/

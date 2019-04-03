@@ -65,18 +65,18 @@ void MRET2::finishPhase() {
 void MRET2::onBranch(Machine &M) {
   if (Recording) {
     for (uint32_t I = LastTarget; I <= M.getLastPC(); I += 4) {
-      if (TheManager.isRegionEntry(I)) {
+      if (isBackwardLoop(I) || TheManager.isRegionEntry(I)) {
         finishRegionFormation();
         break;
       }
       RecordingBufferTmp1.push_back({I, M.getInstAt(I).asI_});
     }
+
+    if (TheManager.isNativeRegionEntry(M.getPC()))
+      finishPhase();
   }
 
   if (TheManager.isNativeRegionEntry(M.getPC())) {
-    if (Recording)
-      finishPhase();
-
     auto Next = TheManager.jumpToRegion(M.getPC());
     M.setPC(Next);
 
@@ -89,7 +89,7 @@ void MRET2::onBranch(Machine &M) {
     }
   }
 
-  if (abs(M.getPC() - M.getLastPC()) > 4) {
+  if (M.getPC() < M.getLastPC()) {
     if (!Recording) {
       ++ExecFreq[M.getPC()];
       if (!TheManager.isRegionEntry(M.getPC()) &&

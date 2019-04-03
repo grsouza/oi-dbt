@@ -18,14 +18,11 @@ void NET::onBranch(Machine &M) {
 #endif
 
       for (uint32_t I = LastTarget; I <= M.getLastPC(); I += 4) {
-        if ((IsRelaxed && hasRecordedAddrs(I)) ||
-            (!IsRelaxed && (M.getPC() < M.getLastPC())) ||
+        if ((IsRelaxed ? hasRecordedAddrs(I) : isBackwardLoop(I)) ||
             TheManager.isRegionEntry(I)) {
-
           finishRegionFormation();
           break;
         }
-
         auto Type = OIDecoder::decode(M.getInstAt(I).asI_).Type;
 
 #ifdef LIMITED
@@ -48,10 +45,14 @@ void NET::onBranch(Machine &M) {
       insertInstruction(I, M.getInstAt(I).asI_);
 #endif
       }
+
+      if (TheManager.isNativeRegionEntry(M.getPC()))
+        finishRegionFormation();
+
 #ifdef LIMITED
     }
 #endif
-  } else if (/*abs(M.getPC() - M.getLastPC()) > 4*/ M.getPC() < M.getLastPC() &&
+  } else if (M.getPC() < M.getLastPC() &&
              !TheManager.isRegionEntry(M.getPC())) {
     ++ExecFreq[M.getPC()];
     if (ExecFreq[M.getPC()] > HotnessThreshold)
@@ -59,9 +60,6 @@ void NET::onBranch(Machine &M) {
   }
 
   if (TheManager.isNativeRegionEntry(M.getPC())) {
-    if (Recording)
-      finishRegionFormation();
-
     auto Next = TheManager.jumpToRegion(M.getPC());
     M.setPC(Next);
 

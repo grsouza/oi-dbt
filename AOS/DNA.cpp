@@ -10,7 +10,7 @@ inline int getRandomNumber(int min, int max) { return (rand() % max) + min; }
 
 void DNA::calcFitness(std::shared_ptr<llvm::Module> M) {
   IRO->optimizeIRFunction(M, Genes, AOSIROpt::OptLevel::Basic);
-  Fitness = CA->getStaticSize(M);
+  Fitness = CA->getIPC(M);
 }
 
 void DNA::toPrintInfo(std::ofstream &File) const {

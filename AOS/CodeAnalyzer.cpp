@@ -30,7 +30,7 @@ int CodeAnalyzer::getDynamicSize(llvm::Module *M) {
   // like llvm-mca
 }
 
-double CodeAnalyzer::getIPC(llvm::Module *M) {
+double CodeAnalyzer::getIPC(std::shared_ptr<llvm::Module> M) {
   std::string MCAResult;
   std::string ipc = "";
   int k = 0;

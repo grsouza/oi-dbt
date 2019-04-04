@@ -20,6 +20,6 @@ public:
   CodeAnalyzer() {}
   int getStaticSize(std::shared_ptr<llvm::Module>);
   int getDynamicSize(llvm::Module *);
-  double getIPC(llvm::Module *);
+  double getIPC(std::shared_ptr<llvm::Module>);
 };
 } // namespace dbt

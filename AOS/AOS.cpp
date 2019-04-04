@@ -63,19 +63,19 @@ AOS::AOS(const AOSParams &Params, const std::string &Program,
 }
 
 void AOS::run(llvm::Module *M) {
-  // float CompileTime;
-  // time_t t_start, t_end;
+  float CompileTime;
+  time_t t_start, t_end;
 
   std::string DNARegion =
       RegionCharacterizationStrategy->getCharacterization(*M);
 
   // std::cout << "Region DNA:" << std::endl << DNARegion << std::endl;
 
-  // t_start = time(NULL);
-  // auto SeqOpts = this->Solver->Solve(M);
-  // t_end = time(NULL);
+  t_start = time(NULL);
+  auto SeqOpts = this->Solver->Solve(M);
+  t_end = time(NULL);
 
-  // CompileTime = difftime(t_end, t_start);
+  CompileTime = difftime(t_end, t_start);
 
   // if (Regions.size() > 1) {
   //   int Similarity = SimilarityStrategy->getSimilarityBetween(
@@ -86,8 +86,8 @@ void AOS::run(llvm::Module *M) {
   Data D;
   D.Program = Program;
   D.DNA = DNARegion;
-  // D.CompileTime = CompileTime;
-  // D.SetOpts = SeqOpts;
+  D.CompileTime = CompileTime;
+  D.SetOpts = SeqOpts;
   D.ExecTime = 0;
 
   Regions.push_back(D);
@@ -97,29 +97,29 @@ void AOS::run(llvm::Module *M, TestModeInfo T) { this->Solver->Solve(M, T); }
 
 void AOS::generateData() {
 
-  std::ofstream File(DatabaseFilePath);
+  // std::ofstream File(DatabaseFilePath);
 
-  for (int i = 0; i < Regions.size(); ++i) {
-    File << i << std::endl << Regions[i].DNA << std::endl << std::endl;
-  }
-
-  File.close();
-
-  // if (Regions.size() > 0) {
-  //   std::ofstream File;
-  //   std::string Text;
-
-  //   if (Params.updateDatabase) {
-  //     File.open(Params.database, std::fstream::app);
-  //   } else if (Params.createDatabase) {
-  //     File.open(Params.database);
-  //   }
-
-  //   llvm::raw_string_ostream Stream(Text);
-  //   llvm::yaml::Output yout(Stream);
-
-  //   yout << Regions;
-
-  //   File << Stream.str();
+  // for (int i = 0; i < Regions.size(); ++i) {
+  //   File << i << std::endl << Regions[i].DNA << std::endl << std::endl;
   // }
+
+  // File.close();
+
+  if (Regions.size() > 0) {
+    std::ofstream File;
+    std::string Text;
+
+    if (Params.updateDatabase) {
+      File.open(Params.database, std::fstream::app);
+    } else if (Params.createDatabase) {
+      File.open(Params.database);
+    }
+
+    llvm::raw_string_ostream Stream(Text);
+    llvm::yaml::Output yout(Stream);
+
+    yout << Regions;
+
+    File << Stream.str();
+  }
 }

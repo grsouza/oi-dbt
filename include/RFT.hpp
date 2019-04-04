@@ -5,140 +5,118 @@
 #include <manager.hpp>
 #include <timer.hpp>
 
+#include <array>
+#include <fstream>
+#include <set>
 #include <sparsepp/spp.h>
 #include <vector>
-#include <array>
-#include <set>
-#include <fstream>
 
-#define OIInstList std::vector<std::array<uint32_t,2>>
+#define OIInstList std::vector<std::array<uint32_t, 2>>
 
 namespace dbt {
-  class Manager;
-  class Machine;
+class Manager;
+class Machine;
 
-  class RFT {
-  protected:
-    std::set<uint32_t> AlreadyCompiled;
-    unsigned HotnessThreshold = 50;
-    uint8_t ExecFreq[1000000];
-    bool isEntry[1000000];
-    OIInstList OIRegion;
+class RFT {
+protected:
+  std::set<uint32_t> AlreadyCompiled;
+  unsigned HotnessThreshold = 50;
+  uint8_t ExecFreq[1000000];
+  bool isEntry[1000000];
+  OIInstList OIRegion;
 
-    bool Recording = false;
-    uint32_t RecordingEntry;
+  bool Recording = false;
+  uint32_t RecordingEntry;
 
-    uint32_t LastTarget;
+  uint32_t LastTarget;
 
-    unsigned RegionLimitSize = -1;
-    unsigned RegionMaxSize = 1000;
-    
-    Manager& TheManager;
+  Manager &TheManager;
 
-    void startRegionFormation(uint32_t); 
-    bool finishRegionFormation(); 
-    void insertInstruction(uint32_t, uint32_t);
-    void insertInstruction(std::array<uint32_t, 2>&);
-    bool hasRecordedAddrs(uint32_t);
-  public:
-    RFT(Manager& M) : TheManager(M) {};
+  void startRegionFormation(uint32_t);
+  bool finishRegionFormation();
+  bool isBackwardLoop(uint32_t);
+  void insertInstruction(uint32_t, uint32_t);
+  void insertInstruction(std::array<uint32_t, 2> &);
+  bool hasRecordedAddrs(uint32_t);
 
-    ~RFT() {}
+public:
+  RFT(Manager &M) : TheManager(M){};
 
-    void printRegions();
+  ~RFT() {}
 
-    void setHotnessThreshold (unsigned int threshold) { 
-      HotnessThreshold = threshold;
-    };
+  void printRegions();
 
-    void setRegionLimitSize(unsigned Limit) {
-      RegionLimitSize = Limit;
-    };
-
-    virtual void onBranch(dbt::Machine&) = 0;
+  void setHotnessThreshold(unsigned int threshold) {
+    HotnessThreshold = threshold;
   };
 
-  class NET : public RFT {
-    bool IsRelaxed;
-  public:
-    NET(Manager& M, bool Relaxed = false) : RFT(M), IsRelaxed(Relaxed) {};
+  void setRegionLimitSize(unsigned Limit){};
 
-    void onBranch(dbt::Machine&);
-  };
+  virtual void onBranch(dbt::Machine &) = 0;
+};
 
-  class MethodBased : public RFT {
-    std::set<std::string> ToCompile;
-    bool CompileOnlyHot = false;
-   public:
-    MethodBased(Manager& M, std::string PathToTCList = "") : RFT(M) {
-      if (PathToTCList != "") {
-        std::ifstream infile(PathToTCList);
-        double FuncCoverage;
-        std::string FuncName;
-        double TotalCoverage = 0;
-        while (infile >> FuncCoverage >> FuncName)  {
-          ToCompile.insert(FuncName);
-          CompileOnlyHot = true;
-          TotalCoverage += FuncCoverage;
-          if (TotalCoverage > 98) 
-            break;
-        } 
-      }
-    };
+class NET : public RFT {
+  bool IsRelaxed;
 
-    void addFunctionToCompile(uint32_t, Machine&);
-    void onBranch(dbt::Machine&);
-  };
+public:
+  NET(Manager &M, bool Relaxed = false) : RFT(M), IsRelaxed(Relaxed){};
 
-  class MRET2 : public RFT {
-    OIInstList RecordingBufferTmp1, RecordingBufferTmp2;
+  void onBranch(dbt::Machine &);
+};
 
-    uint32_t header;
-    spp::sparse_hash_map<uint32_t, unsigned> phases;
+class MRET2 : public RFT {
+  OIInstList RecordingBufferTmp1, RecordingBufferTmp2;
 
-    unsigned stored_index = 0;
-    OIInstList stored[1000];
+  uint32_t header;
+  spp::sparse_hash_map<uint32_t, unsigned> phases;
 
-    bool IsRelaxed;
-  public:
-    MRET2(Manager& M, bool Relaxed = false) : RFT(M), IsRelaxed(Relaxed) {};
+  unsigned stored_index = 0;
+  OIInstList stored[1000];
 
-    uint32_t getStoredIndex(uint32_t);
-    uint32_t getPhase(uint32_t);
-    bool hasRecorded(uint32_t);
-    void mergePhases();
-    void finishPhase();
+  bool IsRelaxed;
 
-    void onBranch(dbt::Machine&);
-  };
+public:
+  MRET2(Manager &M, bool Relaxed = false) : RFT(M), IsRelaxed(Relaxed){};
 
-  class NETPlus : public RFT {
-    void addNewPath(OIInstList);
-    void expand(unsigned, Machine&);
-    void expandAndFinish(Machine&);
+  uint32_t getStoredIndex(uint32_t);
+  uint32_t getPhase(uint32_t);
+  bool hasRecorded(uint32_t);
+  void mergePhases();
+  void finishPhase();
 
-    bool IsExtendedRelaxed;
+  void onBranch(dbt::Machine &);
+};
 
-    std::vector<uint32_t> ShadowStack;
-  public:
-    NETPlus(Manager& M, bool ExtRelaxed = false) : RFT(M), IsExtendedRelaxed(ExtRelaxed) {};
+class NETPlus : public RFT {
+  void addNewPath(OIInstList);
+  void expand(unsigned, Machine &);
+  void expandAndFinish(Machine &);
 
-    void onBranch(dbt::Machine&);
-  };
+  bool IsExtendedRelaxed;
+  bool IsCallExtended;
 
-  class NullRFT : public RFT {
-  public:
-    NullRFT(Manager& M) : RFT(M) {};
+  std::vector<uint32_t> ShadowStack;
 
-    void onBranch(dbt::Machine&) {};
-  };
+public:
+  NETPlus(Manager &M, bool ExtRelaxed = false, bool CallExtend = false)
+      : RFT(M), IsExtendedRelaxed(ExtRelaxed), IsCallExtended(CallExtend){};
 
-  class PreheatRFT : public RFT {
-  public:
-    PreheatRFT(Manager& M) : RFT(M) {};
+  void onBranch(dbt::Machine &);
+};
 
-    void onBranch(dbt::Machine&);
-  };
-}
+class NullRFT : public RFT {
+public:
+  NullRFT(Manager &M) : RFT(M){};
+
+  void onBranch(dbt::Machine &){};
+};
+
+class PreheatRFT : public RFT {
+public:
+  PreheatRFT(Manager &M) : RFT(M){};
+
+  void onBranch(dbt::Machine &);
+};
+} // namespace dbt
 
 #endif

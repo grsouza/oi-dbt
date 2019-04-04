@@ -1,5 +1,5 @@
-#include <RFT.hpp>
 #include <OIPrinter.hpp>
+#include <RFT.hpp>
 
 #include <queue>
 #include <set>
@@ -16,9 +16,10 @@ using namespace dbt;
 unsigned TotalInst = 0;
 #endif
 
-bool isControlFlowInst(uint32_t Opcode) {
+bool isControlFlowInst(uint32_t Opcode, bool IsCallExtended) {
   OIDecoder::OIInst Inst = OIDecoder::decode(Opcode);
-  return OIDecoder::isControlFlowInst(Inst);
+  return OIDecoder::isControlFlowInst(Inst) ||
+         (IsCallExtended && Inst.Type == Jumpr);
 }
 
 std::array<uint32_t, 2> getPossibleNextAddrs(InstPair Branch) {
@@ -35,11 +36,12 @@ void NETPlus::addNewPath(OIInstList NewPath) {
       TotalInst++;
     } else if (TotalInst == RegionLimitSize) {
       for (auto I : OIRegion) {
-        std::cerr << std::hex << I[0] << ":\t" << dbt::OIPrinter::getString(OIDecoder::decode(I[1])) << "\n";
+        std::cerr << std::hex << I[0] << ":\t"
+                  << dbt::OIPrinter::getString(OIDecoder::decode(I[1])) << "\n";
       }
-      std::cerr <<"BLAH: " << OIRegion[0][0] << "\n";
+      std::cerr << "BLAH: " << OIRegion[0][0] << "\n";
       TotalInst++;
-      finishRegionFormation(); 
+      finishRegionFormation();
     }
 #else
     insertInstruction(NewInst[0], NewInst[1]);
@@ -47,12 +49,13 @@ void NETPlus::addNewPath(OIInstList NewPath) {
   }
 }
 
-void NETPlus::expand(unsigned Deepness, Machine& M) {
-  if (OIRegion.size() == 0) return;
+void NETPlus::expand(unsigned Deepness, Machine &M) {
+  if (OIRegion.size() == 0)
+    return;
 
   std::queue<InstPair> S;
   spp::sparse_hash_map<uint32_t, unsigned> Distance;
-  spp::sparse_hash_map<uint32_t, InstPair> Next, Parent;
+  spp::sparse_hash_map<uint32_t, InstPair> Next, Parent, CallStack;
   std::set<uint32_t> LoopEntries;
 
   // Init BFS frontier
@@ -64,7 +67,7 @@ void NETPlus::expand(unsigned Deepness, Machine& M) {
       LoopEntries.insert(Addrs);
       First = false;
     } else {
-      if (isControlFlowInst(I[1])) {
+      if (isControlFlowInst(I[1], IsCallExtended)) {
         S.push(I);
         Distance[Addrs] = 0;
         Parent[Addrs] = {0, 0};
@@ -78,16 +81,37 @@ void NETPlus::expand(unsigned Deepness, Machine& M) {
 
     if (Distance[Current[0]] < Deepness) {
 
-      for (auto Target : getPossibleNextAddrs(Current)) {
-        if (Target == 0 || Parent.count(Target) != 0) continue;
+      std::array<uint32_t, 2> NextAddrs = {0, 0};
+      if (OIDecoder::decode(Current[1]).Type == Jumpr) {
+        uint32_t Begin = Current[0];
+        uint32_t Prev = Next[Begin][0];
+        while (true) {
+          if (OIDecoder::decode(Parent[Prev][1]).Type == Call) {
+            NextAddrs = {Parent[Prev][0] + 4, 0};
+            break;
+          }
+
+          Begin = Parent[Prev][0];
+          Prev = Next[Begin][0];
+          if (Prev == 0) {
+            break;
+          }
+        }
+      } else {
+        NextAddrs = getPossibleNextAddrs(Current);
+      }
+
+      for (auto Target : NextAddrs) {
+        if (Target == 0 || Parent.count(Target) != 0)
+          continue;
 
         Parent[Target] = Current;
         // Iterate over all instructions between the target and the next branch
         InstPair it = {Target, M.getInstAt(Target).asI_};
 
         while (it[0] < M.getCodeEndAddrs()) {
-          bool IsCycle = ((hasRecordedAddrs(it[0]) && IsExtendedRelaxed) 
-              || (OIRegion[0][0] == it[0] && !IsExtendedRelaxed));
+          bool IsCycle = (hasRecordedAddrs(it[0]) && IsExtendedRelaxed) ||
+                         (OIRegion[0][0] == it[0] && !IsExtendedRelaxed);
 
           if (IsCycle && Distance[Current[0]] > 0) {
             OIInstList NewPath;
@@ -97,11 +121,12 @@ void NETPlus::expand(unsigned Deepness, Machine& M) {
               auto i = Begin;
               while (true) {
                 NewPath.push_back({i, M.getInstAt(i).asI_});
-                if (i == Prev) break;
+                if (i == Prev)
+                  break;
                 i -= 4;
               }
               Begin = Parent[Prev][0];
-              Prev  = Next[Begin][0];
+              Prev = Next[Begin][0];
               if (Prev == 0) {
                 break;
               }
@@ -111,66 +136,72 @@ void NETPlus::expand(unsigned Deepness, Machine& M) {
             break;
           }
 
-          if (TheManager.isRegionEntry(it[0])) 
+          OIDecoder::OIInst Inst = OIDecoder::decode(it[1]);
+          if (TheManager.isRegionEntry(it[0]) || Inst.Type == Ijmp ||
+              Inst.Type == Callr)
             break;
 
-          if (isControlFlowInst(it[1]) && Distance.count(it[0]) == 0) {
+          if (isControlFlowInst(it[1], IsCallExtended) &&
+              Distance.count(it[0]) == 0) {
             S.push(it);
             Distance[it[0]] = Distance[Current[0]] + 1;
-            Next[it[0]] = { Target, M.getInstAt(Target).asI_ };
+            Next[it[0]] = {Target, M.getInstAt(Target).asI_};
             break;
           }
-          it = {it[0]+4, M.getInstAt(it[0]+4).asI_};
+          it = {it[0] + 4, M.getInstAt(it[0] + 4).asI_};
         }
       }
     }
   }
 }
 
-void NETPlus::expandAndFinish(Machine& M) {
-  expand(10, M); 
-  finishRegionFormation(); 
+void NETPlus::expandAndFinish(Machine &M) {
+  expand(10, M);
+  finishRegionFormation();
 }
 
-static unsigned int regionFrequency= 0;
+static unsigned int regionFrequency = 0;
 
-void NETPlus::onBranch(Machine& M) {
+void NETPlus::onBranch(Machine &M) {
   if (Recording) {
     for (uint32_t I = LastTarget; I <= M.getLastPC(); I += 4) {
-      if (OIRegion.size() > RegionMaxSize 
-          || (IsExtendedRelaxed && hasRecordedAddrs(I))
-          || (!IsExtendedRelaxed && (M.getPC() < M.getLastPC())) || TheManager.isRegionEntry(I)) { 
+      if ((IsExtendedRelaxed ? hasRecordedAddrs(I) : isBackwardLoop(I)) ||
+          TheManager.isRegionEntry(I)) {
         expandAndFinish(M);
         break;
       }
 
-#ifdef LIMITED      
+#ifdef LIMITED
       if (TotalInst < RegionLimitSize) {
         OIRegion.push_back({I, M.getInstAt(I).asI_});
         TotalInst++;
       } else if (TotalInst == RegionLimitSize) {
         for (auto I : OIRegion) {
-          std::cerr << std::hex << I[0] << ":\t" << dbt::OIPrinter::getString(OIDecoder::decode(I[1])) << "\n";
+          std::cerr << std::hex << I[0] << ":\t"
+                    << dbt::OIPrinter::getString(OIDecoder::decode(I[1]))
+                    << "\n";
         }
-        std::cerr <<"BLAH: " << I << "\n";
+        std::cerr << "BLAH: " << I << "\n";
         TotalInst++;
-        finishRegionFormation(); 
+        finishRegionFormation();
       }
 #else
       OIRegion.push_back({I, M.getInstAt(I).asI_});
 #endif
     }
-  } else if (M.getPC() < M.getLastPC() && !TheManager.isRegionEntry(M.getPC())) {
+
+    if (TheManager.isNativeRegionEntry(M.getPC()))
+      expandAndFinish(M);
+
+  } else if (M.getPC() < M.getLastPC() &&
+             !TheManager.isRegionEntry(M.getPC())) {
     ++ExecFreq[M.getPC()];
-    if (ExecFreq[M.getPC()] > HotnessThreshold) 
+    if (ExecFreq[M.getPC()] > HotnessThreshold)
       startRegionFormation(M.getPC());
   }
 
   if (TheManager.isNativeRegionEntry(M.getPC())) {
-    if (Recording) 
-      expandAndFinish(M);
-
-    auto Next = TheManager.jumpToRegion(M.getPC()); 
+    auto Next = TheManager.jumpToRegion(M.getPC());
     M.setPC(Next);
 
     ++ExecFreq[Next];
@@ -178,7 +209,7 @@ void NETPlus::onBranch(Machine& M) {
       startRegionFormation(Next);
 
     TheManager.setRegionRecorging(false);
-  }  
+  }
 
   LastTarget = M.getPC();
 }

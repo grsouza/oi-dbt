@@ -16,11 +16,10 @@
 namespace dbt {
 class CodeAnalyzer {
 public:
-  static std::string getSymbolicRepresentation(const llvm::Module *);
 
   CodeAnalyzer() {}
   int getStaticSize(std::shared_ptr<llvm::Module>);
   int getDynamicSize(llvm::Module *);
-  double getIPC(llvm::Module *);
+  double getIPC(std::shared_ptr<llvm::Module>);
 };
 } // namespace dbt

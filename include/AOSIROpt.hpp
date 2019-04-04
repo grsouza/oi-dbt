@@ -2,22 +2,24 @@
 
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Module.h"
-#include <string>
-
 #include <memory>
 
 namespace dbt {
+
 class AOSIROpt {
-  void populateFuncPassManager(llvm::legacy::FunctionPassManager *,
-                               std::vector<uint16_t>);
+  std::unique_ptr<llvm::legacy::PassManager> MPM;
+  std::unique_ptr<llvm::legacy::FunctionPassManager> FPM;
+
+  void populatePassManager(llvm::legacy::PassManager *MPM,
+                           llvm::legacy::FunctionPassManager *FPM,
+                           std::vector<std::string> Passes);
 
 public:
-  AOSIROpt(){};
+  AOSIROpt() {}
 
-  enum OptLevel { Basic, Soft, Medium, Hard, Custom };
+  // enum OptLevel { Basic, Soft, Medium, Hard, Custom };
 
-  void optimizeIRFunction(std::shared_ptr<llvm::Module>, std::vector<uint16_t>,
-                          OptLevel);
-  void optimizeIRFunction(llvm::Module *M, std::vector<uint16_t>, OptLevel);
+  // void optimizeIRFunction(llvm::Module *M, OptLevel Level);
+  void customOptimizeIRFunction(llvm::Module *M, std::vector<std::string> Opts);
 };
 } // namespace dbt

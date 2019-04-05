@@ -37,11 +37,11 @@ struct AOSParams {
 
   struct ICStrategy {
     enum Value {
-      GA,
+      // GA,
       RMHC,
     } value;
     union Params {
-      GASolverParams ga;
+      // GASolverParams ga;
       RMHCSolverParams rmhc;
     } params;
   } icStrategy;
@@ -117,9 +117,9 @@ struct AOSParams {
 };
 } // namespace dbt
 
-template <> struct llvm::yaml::MappingTraits<dbt::GASolverParams> {
-  static void mapping(llvm::yaml::IO &io, dbt::GASolverParams &params);
-};
+// template <> struct llvm::yaml::MappingTraits<dbt::GASolverParams> {
+//   static void mapping(llvm::yaml::IO &io, dbt::GASolverParams &params);
+// };
 
 template <> struct llvm::yaml::MappingTraits<dbt::RMHCSolverParams> {
   static void mapping(llvm::yaml::IO &io, dbt::RMHCSolverParams &params);

@@ -28,9 +28,9 @@ AOS::AOS(const AOSParams &Params, const std::string &Program,
          const std::string &DatabaseFilePath)
     : Params(Params), Program(Program), DatabaseFilePath(DatabaseFilePath) {
   switch (Params.icStrategy.value) {
-  case AOSParams::ICStrategy::GA:
-    this->Solver = std::make_unique<GASolver>(Params.icStrategy.params.ga);
-    break;
+    // case AOSParams::ICStrategy::GA:
+    //   this->Solver = std::make_unique<GASolver>(Params.icStrategy.params.ga);
+    //   break;
 
   case AOSParams::ICStrategy::RMHC:
     this->Solver = std::make_unique<RMHCSolver>(Params.icStrategy.params.rmhc);

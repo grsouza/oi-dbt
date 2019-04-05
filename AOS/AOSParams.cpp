@@ -4,20 +4,20 @@
 using namespace dbt;
 using namespace llvm::yaml;
 
-void MappingTraits<GASolverParams>::mapping(IO &io, GASolverParams &params) {
-  io.mapRequired("generations", params.Generations);
-  io.mapRequired("mutationRate", params.MutationRate);
-  io.mapRequired("crossoverRate", params.CrossoverRate);
-  io.mapRequired("searchSpace", params.SearchSpace);
-  io.mapRequired("populationSize", params.PopulationSize);
-  io.mapRequired("max", params.Max);
-  io.mapRequired("min", params.Min);
-}
+// void MappingTraits<GASolverParams>::mapping(IO &io, GASolverParams &params) {
+//   io.mapRequired("generations", params.Generations);
+//   io.mapRequired("mutationRate", params.MutationRate);
+//   io.mapRequired("crossoverRate", params.CrossoverRate);
+//   io.mapRequired("searchSpace", params.SearchSpace);
+//   io.mapRequired("populationSize", params.PopulationSize);
+//   io.mapRequired("max", params.Max);
+//   io.mapRequired("min", params.Min);
+// }
 
 void MappingTraits<RMHCSolverParams>::mapping(IO &io,
                                               RMHCSolverParams &params) {
   io.mapRequired("generations", params.Generations);
-  io.mapRequired("searchSpace", params.SearchSpace);
+  // io.mapRequired("searchSpace", params.SearchSpace);
   io.mapRequired("min", params.Min);
   io.mapRequired("max", params.Max);
   io.mapRequired("size", params.Size);
@@ -35,9 +35,9 @@ void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
   io.mapRequired("icStrategy", params.icStrategy.value);
 
   switch (params.icStrategy.value) {
-  case AOSParams::ICStrategy::Value::GA:
-    io.mapRequired("icStrategyParams", params.icStrategy.params.ga);
-    break;
+  // case AOSParams::ICStrategy::Value::GA:
+  //   io.mapRequired("icStrategyParams", params.icStrategy.params.ga);
+  //   break;
   case AOSParams::ICStrategy::Value::RMHC:
     io.mapRequired("icStrategyParams", params.icStrategy.params.rmhc);
     break;
@@ -56,7 +56,7 @@ void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
 
 void ScalarEnumerationTraits<AOSParams::ICStrategy::Value>::enumeration(
     IO &io, AOSParams::ICStrategy::Value &strategy) {
-  io.enumCase(strategy, "GA", AOSParams::ICStrategy::Value::GA);
+  // io.enumCase(strategy, "GA", AOSParams::ICStrategy::Value::GA);
   io.enumCase(strategy, "RMHC", AOSParams::ICStrategy::Value::RMHC);
 }
 

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "AOSDatabase.hpp"
 #include "AOSSolver.hpp"
 #include "DNA.hpp"
 #include "SearchSpace.hpp"
-#include "AOSDatabase.hpp"
 
 namespace dbt {
 struct TestModeInfo;
@@ -11,7 +11,6 @@ struct TestModeInfo;
 struct RMHCSolverParams : public AOSSolverParams {
   unsigned Size, Max, Min;
   unsigned Generations;
-  SearchSpaceType SearchSpace;
 };
 
 class RMHCSolver : public AOSSolver {
@@ -31,10 +30,7 @@ public:
 private:
   DNA *mutate(const DNA &D);
 
-  DNA *generateInitialDNA(unsigned GeneSize, SearchSpaceType SearchSpace);
-  std::vector<uint16_t> generateRandomGene(unsigned Size);
-  std::vector<uint16_t> generateBest10Gene(unsigned Size);
-  std::vector<uint16_t> generateBaselineGene(unsigned Size);
+  DNA *generateInitialDNA();
 
   enum MutationKind {
     /// Inserts a random pass at end of sequence.

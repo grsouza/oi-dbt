@@ -1,5 +1,6 @@
 #include "RMHCSolver.hpp"
 #include "AOSLog.hpp"
+#include "DNA.hpp"
 #include "SearchSpace.hpp"
 #include "manager.hpp"
 
@@ -18,7 +19,7 @@ std::vector<uint16_t> RMHCSolver::Solve(llvm::Module *M) {
   Mod = M;
   LOG->newRegion(++TotalRegion);
 
-  BestEvaluated = generateInitialDNA(Params.Size, Params.SearchSpace);
+  BestEvaluated = generateInitialDNA();
   BestEvaluated->calcFitness(std::move(llvm::CloneModule(*Mod)));
 
   for (unsigned CurGen = 0; CurGen < Params.Generations; ++CurGen) {
@@ -40,31 +41,19 @@ void RMHCSolver::Solve(llvm::Module *, TestModeInfo) {}
 
 void RMHCSolver::Evaluate() { LOG->dna(BestEvaluated); }
 
-DNA *RMHCSolver::generateInitialDNA(unsigned GeneSize,
-                                    SearchSpaceType SearchSpace) {
-  switch (SearchSpace) {
-  case SearchSpaceType::RANDOM:
-    return new DNA(generateRandomGene(GeneSize));
-
-  case SearchSpaceType::BEST10:
-    return new DNA(generateBest10Gene(GeneSize));
-
-  case SearchSpaceType::BASELINE:
-    return new DNA(generateBaselineGene(GeneSize));
-  }
-}
+DNA *RMHCSolver::generateInitialDNA() { return new DNA(O3_PASSES); }
 
 DNA *RMHCSolver::mutate(const DNA &D) {
-  const std::vector<uint16_t> &CurGene = D.getGenes();
+  const std::vector<std::string> &CurGene = D.getGenes();
   size_t Size = CurGene.size();
 
   MutationKind Kind = static_cast<MutationKind>(getRandomNumber(0, 4));
 
-  std::vector<uint16_t> NewGene = CurGene;
+  std::vector<std::string> NewGene = CurGene;
 
   switch (Kind) {
   case MutationKind::INSERT: {
-    NewGene.push_back(getRandomNumber(OPT_MIN, OPT_MAX + 1));
+    NewGene.push_back(O3_PASSES[getRandomNumber(0, O3_PASSES.size())]);
     break;
   }
 
@@ -83,7 +72,7 @@ DNA *RMHCSolver::mutate(const DNA &D) {
       Idx2 = getRandomNumber(0, Size);
     } while (Idx1 == Idx2);
 
-    uint16_t Tmp = NewGene[Idx1];
+    std::string Tmp = NewGene[Idx1];
     NewGene[Idx1] = NewGene[Idx2];
     NewGene[Idx2] = Tmp;
     break;
@@ -91,38 +80,4 @@ DNA *RMHCSolver::mutate(const DNA &D) {
   }
 
   return new DNA(NewGene);
-}
-
-/** =================================
- * GENE Generation
- ===================================*/
-
-std::vector<uint16_t> RMHCSolver::generateRandomGene(unsigned Size) {
-  std::vector<uint16_t> Gene;
-  Gene.reserve(Size);
-
-  for (unsigned i = 0; i < Size; ++i)
-    Gene.push_back(getRandomNumber(OPT_MIN, OPT_MAX + 1));
-
-  return Gene;
-}
-
-std::vector<uint16_t> RMHCSolver::generateBest10Gene(unsigned Size) {
-  std::vector<uint16_t> Gene;
-  Gene.reserve(Size);
-
-  for (unsigned i = 0; i < Size; ++i)
-    Gene.push_back(best10[getRandomNumber(0, best10.size())]);
-
-  return Gene;
-}
-
-std::vector<uint16_t> RMHCSolver::generateBaselineGene(unsigned Size) {
-  std::vector<uint16_t> Gene;
-  Gene.reserve(Size);
-
-  for (unsigned i = 0; i < Size; ++i)
-    Gene.push_back(baseline[getRandomNumber(0, baseline.size())]);
-
-  return Gene;
 }

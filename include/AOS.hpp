@@ -22,7 +22,7 @@ struct TestModeInfo;
 class AOS {
   AOSParams Params;
   std::string Program;
-  std::string DatabaseFilePath;
+  std::string DatabaseDirectoryPath;
   std::unique_ptr<AOSSolver> Solver;
   std::unique_ptr<AOSSimilarityStrategy> SimilarityStrategy;
   std::unique_ptr<AOSRegionCharacterizationStrategy>

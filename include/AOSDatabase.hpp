@@ -12,13 +12,13 @@ namespace dbt {
 struct Data {
   std::string Program;
   std::string DNA;
-  std::vector<uint16_t> SetOpts;
+  std::vector<std::string> SetOpts;
   float CompileTime;
   float ExecTime;
 };
 } // namespace dbt
 
-LLVM_YAML_IS_SEQUENCE_VECTOR(dbt::Data)
+LLVM_YAML_IS_FLOW_SEQUENCE_VECTOR(dbt::Data)
 
 template <> struct llvm::yaml::MappingTraits<dbt::Data> {
   static void mapping(llvm::yaml::IO &io, dbt::Data &Params);

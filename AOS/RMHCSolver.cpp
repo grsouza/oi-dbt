@@ -13,43 +13,42 @@
 using namespace dbt;
 
 RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
-    : AOSSolver(), Params(Params), TotalRegion(0) {}
-
-std::vector<uint16_t> RMHCSolver::Solve(llvm::Module *M) {
-  Mod = M;
-  LOG->newRegion(++TotalRegion);
+    : AOSSolver(), Params(Params), TotalRegion(0) {
 
   BestEvaluated = generateInitialDNA();
-  BestEvaluated->calcFitness(std::move(llvm::CloneModule(*Mod)));
+}
 
-  for (unsigned CurGen = 0; CurGen < Params.Generations; ++CurGen) {
-    DNA *NewDNA = mutate(*BestEvaluated);
-    NewDNA->calcFitness(std::move(llvm::CloneModule(*Mod)));
+std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
 
-    if (NewDNA->getFitness() > BestEvaluated->getFitness()) {
-      delete BestEvaluated;
-      BestEvaluated = NewDNA;
+  unsigned Generation = 0;
+
+  while (Params.Generations > Generation++) {
+
+    auto NewDNA = std::move(mutate(BestEvaluated->getGenes()));
+
+    if (NewDNA->getFitness(std::move(llvm::CloneModule(*M))) >
+        BestEvaluated->getFitness(std::move(llvm::CloneModule(*M)))) {
+      BestEvaluated = std::move(NewDNA);
     }
-
-    // TODO: Check for threshold and break
   }
 
-  Evaluate();
+  return BestEvaluated->getGenes();
 }
 
 void RMHCSolver::Solve(llvm::Module *, TestModeInfo) {}
 
-void RMHCSolver::Evaluate() { LOG->dna(BestEvaluated); }
+void RMHCSolver::Evaluate() {}
 
-DNA *RMHCSolver::generateInitialDNA() { return new DNA(O3_PASSES); }
+std::unique_ptr<DNA> RMHCSolver::generateInitialDNA() {
+  return std::make_unique<DNA>(O3_PASSES);
+}
 
-DNA *RMHCSolver::mutate(const DNA &D) {
-  const std::vector<std::string> &CurGene = D.getGenes();
-  size_t Size = CurGene.size();
+std::unique_ptr<DNA> RMHCSolver::mutate(const std::vector<std::string> &D) {
+  size_t Size = D.size();
 
   MutationKind Kind = static_cast<MutationKind>(getRandomNumber(0, 4));
 
-  std::vector<std::string> NewGene = CurGene;
+  std::vector<std::string> NewGene = D;
 
   switch (Kind) {
   case MutationKind::INSERT: {
@@ -79,5 +78,5 @@ DNA *RMHCSolver::mutate(const DNA &D) {
   }
   }
 
-  return new DNA(NewGene);
+  return std::make_unique<DNA>(NewGene);
 }

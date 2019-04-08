@@ -14,23 +14,21 @@ struct RMHCSolverParams : public AOSSolverParams {
 };
 
 class RMHCSolver : public AOSSolver {
+
   int TotalRegion;
   const RMHCSolverParams &Params;
-  llvm::Module *Mod;
-  DNA *BestEvaluated;
+  std::unique_ptr<DNA> BestEvaluated;
 
 public:
   RMHCSolver(const RMHCSolverParams &Params);
-  ~RMHCSolver() { delete BestEvaluated; }
 
-  std::vector<uint16_t> Solve(llvm::Module *M) override;
+  std::vector<std::string> Solve(llvm::Module *M) override;
   void Solve(llvm::Module *, TestModeInfo) override;
   void Evaluate() override;
 
 private:
-  DNA *mutate(const DNA &D);
-
-  DNA *generateInitialDNA();
+  std::unique_ptr<DNA> mutate(const std::vector<std::string> &D);
+  std::unique_ptr<DNA> generateInitialDNA();
 
   enum MutationKind {
     /// Inserts a random pass at end of sequence.

@@ -25,8 +25,9 @@ AOS AOS::create(const std::string &FilePath, const std::string &Program,
 }
 
 AOS::AOS(const AOSParams &Params, const std::string &Program,
-         const std::string &DatabaseFilePath)
-    : Params(Params), Program(Program), DatabaseFilePath(DatabaseFilePath) {
+         const std::string &DatabaseDirectoryPath)
+    : Params(Params), Program(Program),
+      DatabaseDirectoryPath(DatabaseDirectoryPath) {
   switch (Params.icStrategy.value) {
     // case AOSParams::ICStrategy::GA:
     //   this->Solver = std::make_unique<GASolver>(Params.icStrategy.params.ga);
@@ -97,29 +98,24 @@ void AOS::run(llvm::Module *M, TestModeInfo T) { this->Solver->Solve(M, T); }
 
 void AOS::generateData() {
 
-  // std::ofstream File(DatabaseFilePath);
+  std::ofstream RegionsFile("regions.out");
+  std::ofstream DBFile("db.out");
 
-  // for (int i = 0; i < Regions.size(); ++i) {
-  //   File << i << std::endl << Regions[i].DNA << std::endl << std::endl;
-  // }
-
-  // File.close();
+  for (const auto &Region : Regions) {
+    RegionsFile << Region.DNA << std::endl << std::endl;
+  }
 
   if (Regions.size() > 0) {
-    std::ofstream File;
     std::string Text;
-
-    if (Params.updateDatabase) {
-      File.open(Params.database, std::fstream::app);
-    } else if (Params.createDatabase) {
-      File.open(Params.database);
-    }
 
     llvm::raw_string_ostream Stream(Text);
     llvm::yaml::Output yout(Stream);
 
     yout << Regions;
 
-    File << Stream.str();
+    DBFile << Stream.str();
   }
+
+  RegionsFile.close();
+  DBFile.close();
 }

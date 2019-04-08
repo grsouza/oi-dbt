@@ -21,25 +21,30 @@ protected:
   std::unique_ptr<AOSIROpt> IRO;
   std::unique_ptr<CodeAnalyzer> CA;
   std::vector<std::string> Genes;
-  int Fitness;
+  bool FitnessCalculated;
+  double Fitness;
 
 public:
   DNA(std::vector<std::string> Genes) : Genes(std::move(Genes)) {
     IRO = llvm::make_unique<AOSIROpt>();
     CA = llvm::make_unique<CodeAnalyzer>();
+    FitnessCalculated = false;
   }
 
   DNA &operator=(const DNA &Other) noexcept {
     Genes = std::move(Other.Genes);
     Fitness = Other.Fitness;
+    FitnessCalculated = Other.FitnessCalculated;
     return *this;
   }
 
-  inline const std::vector<std::string> &getGenes() const { return Genes; }
-  void toPrintInfo(std::ofstream &File) const;
-  void calcFitness(std::shared_ptr<llvm::Module> M);
-  inline int getFitness() const { return Fitness; }
+  double getFitness(std::shared_ptr<llvm::Module> M);
+
+  const std::vector<std::string> &getGenes() const { return Genes; }
   std::vector<std::string> getGenes() { return Genes; }
+
+private:
+  void calculateFitness(std::shared_ptr<llvm::Module> M);
 };
 
 // class GADNA : public DNA {

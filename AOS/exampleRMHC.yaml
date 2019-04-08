@@ -20,7 +20,6 @@ roi: 396
 icStrategy: RMHC
 icStrategyParams:
   generations: 100
-  # searchSpace: RANDOM # [RANDOM, BASELINE, BEST10]
   size: 30
   max: 30
   min: 5

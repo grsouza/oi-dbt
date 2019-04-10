@@ -15,7 +15,6 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Type.h"
-#include "llvm/IR/TypeBuilder.h"
 
 using namespace dbt;
 using namespace llvm;

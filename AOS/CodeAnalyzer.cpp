@@ -40,9 +40,9 @@ double CodeAnalyzer::getIPC(std::shared_ptr<llvm::Module> M) {
   WriteBitcodeToFile(*M, OS);
   OS.flush();
   //.bc >> .s
-  std::system("llc-7 module.bc");
+  std::system("llc module.bc");
   // call llvm-mca
-  MCAResult = exec("llvm-mca-7 module.s");
+  MCAResult = exec("llvm-mca module.s");
   // find ipc
   for (int i = 0; i < MCAResult.size(); i++) {
     if (MCAResult[i] == 'I') {

@@ -20,13 +20,11 @@ RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
 
 std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
 
-  unsigned Generation = 0;
-
-  while (Params.Generations > Generation++) {
+  for (unsigned Generation = 0; Generation < 10; ++Generation) {
 
     auto NewDNA = std::move(mutate(BestEvaluated->getGenes()));
 
-    if (NewDNA->getFitness(std::move(llvm::CloneModule(*M))) >
+    if (NewDNA->getFitness(std::move(llvm::CloneModule(*M))) <
         BestEvaluated->getFitness(std::move(llvm::CloneModule(*M)))) {
       BestEvaluated = std::move(NewDNA);
     }

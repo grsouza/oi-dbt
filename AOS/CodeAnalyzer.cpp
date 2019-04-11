@@ -1,8 +1,17 @@
 #include "CodeAnalyzer.hpp"
 
+#include "llvm/Bitcode/BitcodeWriter.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/TargetSelect.h"
+
+#include <cctype>
+#include <chrono>
+#include <ctime>
+#include <iostream>
+
 using namespace dbt;
 
-std::string exec(const char *cmd) {
+static std::string exec(const char *cmd) {
   std::array<char, 128> buffer;
   std::string result;
   std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
@@ -16,18 +25,6 @@ std::string exec(const char *cmd) {
   }
 
   return result;
-}
-
-int CodeAnalyzer::getStaticSize(std::shared_ptr<llvm::Module> M) {
-  int Size = 0;
-  for (auto &F : *M)
-    for (auto &BB : F)
-      Size += BB.size();
-  return Size;
-}
-
-int CodeAnalyzer::getDynamicSize(llvm::Module *M) {
-  // like llvm-mca
 }
 
 double CodeAnalyzer::getIPC(std::shared_ptr<llvm::Module> M) {
@@ -60,11 +57,11 @@ double CodeAnalyzer::getIPC(std::shared_ptr<llvm::Module> M) {
     }
   }
   // remove module.bc and module.s
-  std::system("rm module.*");
+  // std::system("rm module.*");
   if (ipc.size() == 0) {
     std::cerr << "Problems with llvm-mca!\n";
     exit(1);
   }
+
   return strtod(ipc.c_str(), nullptr);
-  ;
 }

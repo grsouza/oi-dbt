@@ -11,6 +11,7 @@
 namespace dbt {
 
 struct AOSParams {
+
   /* number of times to execute a program, and then calculate the average */
   unsigned times;
 

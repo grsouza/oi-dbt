@@ -8,4 +8,6 @@ void MappingTraits<Data>::mapping(IO &io, Data &Params) {
   io.mapRequired("SetOpts", Params.SetOpts);
   io.mapRequired("CompileTime", Params.CompileTime);
   io.mapRequired("ExecTime", Params.ExecTime);
+  io.mapRequired("History", Params.History);
+  io.mapRequired("ImproveRate", Params.ImproveRate);
 }

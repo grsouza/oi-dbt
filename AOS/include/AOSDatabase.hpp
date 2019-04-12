@@ -15,6 +15,8 @@ struct Data {
   std::vector<std::string> SetOpts;
   float CompileTime;
   float ExecTime;
+  std::vector<double> History;
+  float ImproveRate;
 };
 } // namespace dbt
 

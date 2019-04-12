@@ -152,15 +152,15 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
   for (std::string PassName : PassesNames) {
     switch (str2int(PassName.c_str())) {
 
-      /*
-       * Module Pass
-       */
+    /*
+     * Module Pass
+     */
 
-      /*
-       * Scalar Transformations (Transform/Scalar.h)
-       */
+    /*
+     * Scalar Transformations (Transform/Scalar.h)
+     */
     case str2int("-rewrite-statepoints-for-gc"): // Make relocations explicit at
-                                                 // statepoints
+      // statepoints
       MPM->add(llvm::createRewriteStatepointsForGCLegacyPass());
       break;
 
@@ -171,7 +171,7 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
       MPM->add(llvm::createStripSymbolsPass());
       break;
     case str2int("-strip-nondebug"): // Strip all symbols, except dbg symbols,
-                                     // from a module
+      // from a module
       MPM->add(llvm::createStripNonDebugSymbolsPass());
       break;
     case str2int(
@@ -292,7 +292,7 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
       FPM->add(llvm::createGuardWideningPass());
       break;
     case str2int("-loop-guard-widening"): // Widen guards (within a single loop,
-                                          // as a loop pass)
+      // as a loop pass)
       FPM->add(llvm::createLoopGuardWideningPass());
       break;
     case str2int("-bdce"): // Bit-Tracking Dead Code Elimination
@@ -399,7 +399,7 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
       FPM->add(llvm::createLowerAtomicPass());
       break;
     case str2int("-lower-guard-intrinsic"): // Lower the guard intrinsic to
-                                            // normal control flow
+      // normal control flow
       FPM->add(llvm::createLowerGuardIntrinsicPass());
       break;
     case str2int("-mergeicmps"): // Merge contiguous icmps into a memcmp
@@ -415,7 +415,7 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
       FPM->add(llvm::createLowerExpectIntrinsicPass());
       break;
     case str2int("-partially-inline-libcalls"): // Partially inline calls to
-                                                // library functions
+      // library functions
       FPM->add(llvm::createPartiallyInlineLibCallsPass());
       break;
     case str2int("-scalarizer"): // Scalarize vector operations
@@ -423,7 +423,7 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
       break;
     case str2int(
         "-separate-const-offset-from-gep"): // Split GEPs to a variadic base and
-                                            // a constant offset for better CSE
+      // a constant offset for better CSE
       FPM->add(llvm::createSeparateConstOffsetFromGEPPass());
       break;
     case str2int(
@@ -488,7 +488,7 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
        * (Transforms/Utils.h)
        */
     case str2int("-lowerinvoke"): // Lower invoke and unwind, for unwindless
-                                  // code generators
+      // code generators
       FPM->add(llvm::createLowerInvokePass());
       break;
     case str2int("-instnamer"): // Assign names to anonymous instructions

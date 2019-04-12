@@ -11,10 +11,10 @@
 
 // using namespace dbt;
 
-// #define INFINITE 100000 
+// #define INFINITE 100000
 
 // //===------------------------------------------------------------------------===//
-// //// Generic 
+// //// Generic
 // ////===----------------------------------------------------------------------===//
 
 // std::vector<uint16_t> generateRandomSpace(unsigned Size) {
@@ -42,15 +42,15 @@
 // }
 
 // //===------------------------------------------------------------------------===//
-// //// Population 
+// //// Population
 // ////===----------------------------------------------------------------------===//
 
 // void Population::toPrintInfo(std::ofstream &File) {
 //   File << std::endl;
 //   File << "total generations: " << Generations << std::endl;
 //   File << "total population: " << Chromosomes.size() << std::endl;
-//   File << "best fitness: " << Best->getFitness() << std::endl;  
-//   File << "best chromosome: " << std::endl;  
+//   File << "best fitness: " << Best->getFitness() << std::endl;
+//   File << "best chromosome: " << std::endl;
 //   Best->toPrintInfo(File);
 //   File << "All chromosomes:" << std::endl;
 //   for(int i = 0; i < Chromosomes.size(); i++) {
@@ -64,7 +64,8 @@
 //   }
 // }
 
-// Population::Population(unsigned SizeP, unsigned SizeG, SearchSpaceType InitSpace) {
+// Population::Population(unsigned SizeP, unsigned SizeG, SearchSpaceType
+// InitSpace) {
 //   Best = nullptr;
 //   Generations = 0;
 //   SizeGenes = SizeG;
@@ -82,28 +83,29 @@
 //         CurGenes = std::move(generateBaselineSpace(SizeGenes));
 //         break;
 //     }
-    
-//     std::unique_ptr<GADNA> CurChrom = std::make_unique<GADNA>(std::move(CurGenes));
+
+//     std::unique_ptr<GADNA> CurChrom =
+//     std::make_unique<GADNA>(std::move(CurGenes));
 //     Chromosomes.push_back(std::move(CurChrom));
 //   }
 // }
 
 // int Population::pickOne() {
 //   int index = 0;
-  
+
 //   float r = getRandomRate();
 //   while(r > 0 || index == Chromosomes.size()) {
 //     if(index > Chromosomes.size()) {
-//       std::cerr << "pickOne trying to access invalid position of population!\n";
-//       exit(1);    
+//       std::cerr << "pickOne trying to access invalid position of
+//       population!\n"; exit(1);
 //     }
 //     r -= Chromosomes[index]->getProbability();
 //     index++;
 //   }
-  
+
 //   if(index > 0)
 //     index--;
-  
+
 //   return index;
 // }
 
@@ -119,15 +121,17 @@
 //         break;
 //       parentTwo = pickOne();
 //     }
-//     //crossover rate 
+//     //crossover rate
 //     float r = getRandomRate();
 //     if(r < crossoverRate) {
 //       randomIndex = getRandomNumber(0, SizeGenes);
-//       //crossover 
+//       //crossover
 //       std::unique_ptr<GADNA> ChildOne(
-//           Chromosomes[parentOne]->crossover(Chromosomes[parentTwo].get(), randomIndex));
+//           Chromosomes[parentOne]->crossover(Chromosomes[parentTwo].get(),
+//           randomIndex));
 //       std::unique_ptr<GADNA> ChildTwo(
-//           Chromosomes[parentTwo]->crossover(Chromosomes[parentOne].get(), randomIndex));
+//           Chromosomes[parentTwo]->crossover(Chromosomes[parentOne].get(),
+//           randomIndex));
 //       //offspring mutate
 //       ChildOne->mutate(mutationRate);
 //       ChildTwo->mutate(mutationRate);
@@ -136,11 +140,13 @@
 //       newChromosomes.push_back(std::move(ChildTwo));
 //     }else {
 //       randomIndex = getRandomNumber(0, SizeGenes);
-//       //crossover 
+//       //crossover
 //       std::unique_ptr<GADNA> ChildOne(
-//           Chromosomes[parentOne]->crossover(Chromosomes[parentOne].get(), randomIndex));
+//           Chromosomes[parentOne]->crossover(Chromosomes[parentOne].get(),
+//           randomIndex));
 //       std::unique_ptr<GADNA> ChildTwo(
-//           Chromosomes[parentTwo]->crossover(Chromosomes[parentTwo].get(), randomIndex));
+//           Chromosomes[parentTwo]->crossover(Chromosomes[parentTwo].get(),
+//           randomIndex));
 //       //offspring mutate
 //       ChildOne->mutate(mutationRate);
 //       ChildTwo->mutate(mutationRate);
@@ -159,7 +165,8 @@
 //     if(Chromosomes[i]->getFitness() < Chromosomes[index]->getFitness())
 //       index = i;
 //   }
-//   if(Best != nullptr && Best->getFitness() > Chromosomes[index]->getFitness()) {
+//   if(Best != nullptr && Best->getFitness() >
+//   Chromosomes[index]->getFitness()) {
 //     Best = Chromosomes[index].get();
 //   }else {
 //     Best = Chromosomes[index].get();
@@ -177,28 +184,28 @@
 // }
 
 // //===------------------------------------------------------------------------===//
-// //// GASolver 
+// //// GASolver
 // ////===----------------------------------------------------------------------===//
 
-// std::vector<uint16_t> GASolver::Solve(llvm::Module *Mod) {
+// std::vector<uint16_t> GASolver::solve(llvm::Module *Mod) {
 //   M = Mod;
 //   ++TotalRegion;
 //   //LOG->newRegion(TotalRegion);
-//   CurrentPop = std::make_shared<Population>(Params.PopulationSize, Params.Max, Params.SearchSpace);
-//   CurrentPop->calcFitness(Mod);
+//   CurrentPop = std::make_shared<Population>(Params.PopulationSize,
+//   Params.Max, Params.SearchSpace); CurrentPop->calcFitness(Mod);
 //   CurrentPop->searchBest();
 //   CurrentPop->normalize();
 //   //LOG->population(CurrentPop);
 //   Evaluate();
-  
+
 //   auto Seq = CurrentPop->getBest();
 //   auto IRO = llvm::make_unique<AOSIROpt>();
 //   IRO->optimizeIRFunction(Mod, Seq->getGenes(), AOSIROpt::OptLevel::Basic);
 
 //   return Seq->getGenes();
 // }
- 
-// void GASolver::Solve(llvm::Module *M, TestModeInfo T) {
+
+// void GASolver::solve(llvm::Module *M, TestModeInfo T) {
 //   ++TotalRegion;
 //   if(T.RegionID == TotalRegion) {
 //     auto IRO = llvm::make_unique<AOSIROpt>();
@@ -207,7 +214,7 @@
 // }
 
 // void GASolver::Evaluate() {
-//   int it = 0; 
+//   int it = 0;
 //   while(it <= Params.Generations) {
 //     CurrentPop->newPoputation(Params.MutationRate, Params.CrossoverRate);
 //     CurrentPop->calcFitness(M);

@@ -1,6 +1,7 @@
 #include "AOS.hpp"
 #include "AOSDatabase.hpp"
 #include "AOSParams.hpp"
+
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -70,19 +71,11 @@ void AOS::run(llvm::Module *M) {
   std::string DNARegion =
       RegionCharacterizationStrategy->getCharacterization(*M);
 
-  // std::cout << "Region DNA:" << std::endl << DNARegion << std::endl;
-
-  t_start = time(NULL);
-  auto SeqOpts = this->Solver->Solve(M);
-  t_end = time(NULL);
+  t_start = time(nullptr);
+  auto SeqOpts = Solver->solve(M);
+  t_end = time(nullptr);
 
   CompileTime = difftime(t_end, t_start);
-
-  // if (Regions.size() > 1) {
-  //   int Similarity = SimilarityStrategy->getSimilarityBetween(
-  //       DNARegion, Regions[Regions.size() - 1].DNA);
-  //   std::cout << "Similarity: " << Similarity << std::endl;
-  // }
 
   Data D;
   D.Program = Program;
@@ -90,6 +83,8 @@ void AOS::run(llvm::Module *M) {
   D.CompileTime = CompileTime;
   D.SetOpts = SeqOpts;
   D.ExecTime = 0;
+  D.History = Solver->getHistory();
+  D.ImproveRate = calculateImproveRate(Solver->getHistory());
 
   Regions.push_back(D);
 }
@@ -105,7 +100,7 @@ void AOS::generateData() {
     RegionsFile << Region.DNA << std::endl << std::endl;
   }
 
-  if (Regions.size() > 0) {
+  if (!Regions.empty()) {
     std::string Text;
 
     llvm::raw_string_ostream Stream(Text);
@@ -118,4 +113,11 @@ void AOS::generateData() {
 
   RegionsFile.close();
   DBFile.close();
+}
+
+double AOS::calculateImproveRate(const std::vector<double> &History) {
+  double Worst = History[0];
+  double Best = History[History.size() - 1];
+
+  return 1 - (Best / Worst);
 }

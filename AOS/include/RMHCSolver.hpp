@@ -8,27 +8,34 @@
 namespace dbt {
 struct TestModeInfo;
 
-struct RMHCSolverParams : public AOSSolverParams {
+struct RMHCSolverParams {
   unsigned Size, Max, Min;
   unsigned Generations;
 };
 
 class RMHCSolver : public AOSSolver {
 
-  int TotalRegion;
-  const RMHCSolverParams &Params;
+  RMHCSolverParams Params;
   std::unique_ptr<DNA> BestEvaluated;
+  std::vector<double> History;
 
 public:
-  RMHCSolver(const RMHCSolverParams &Params);
+  RMHCSolver(RMHCSolverParams Params);
 
-  std::vector<std::string> Solve(llvm::Module *M) override;
+  std::vector<std::string> solve(llvm::Module *M) override;
+
   void Solve(llvm::Module *, TestModeInfo) override;
-  void Evaluate() override;
+
+  std::vector<double> getHistory() const override { return History; }
 
 private:
-  std::unique_ptr<DNA> mutate(const std::vector<std::string> &D);
-  std::unique_ptr<DNA> generateInitialDNA();
+  static std::unique_ptr<DNA> mutate(const std::vector<std::string> &D);
+
+  static std::unique_ptr<DNA> generateInitialDNA();
+
+  /// If fitness doesn't improve in N generations, then it has stagnated and we
+  /// should finish.
+  bool hasStagnated(unsigned N);
 
   enum MutationKind {
     /// Inserts a random pass at end of sequence.

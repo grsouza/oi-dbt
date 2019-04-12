@@ -1,5 +1,4 @@
 #include "RMHCSolver.hpp"
-#include "AOSLog.hpp"
 #include "DNA.hpp"
 #include "SearchSpace.hpp"
 #include "manager.hpp"
@@ -12,15 +11,18 @@
 
 using namespace dbt;
 
-RMHCSolver::RMHCSolver(const RMHCSolverParams &Params)
-    : AOSSolver(), Params(Params), TotalRegion(0) {
+RMHCSolver::RMHCSolver(RMHCSolverParams Params) : AOSSolver(), Params(Params) {}
+
+std::vector<std::string> RMHCSolver::solve(llvm::Module *M) {
 
   BestEvaluated = generateInitialDNA();
-}
+  History.clear();
 
-std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
+  unsigned Generation = 0;
 
-  for (unsigned Generation = 0; Generation < 10; ++Generation) {
+  while (Generation < Params.Generations && !hasStagnated(300)) {
+    History.push_back(
+        BestEvaluated->getFitness(std::move(llvm::CloneModule(*M))));
 
     auto NewDNA = std::move(mutate(BestEvaluated->getGenes()));
 
@@ -28,14 +30,23 @@ std::vector<std::string> RMHCSolver::Solve(llvm::Module *M) {
         BestEvaluated->getFitness(std::move(llvm::CloneModule(*M)))) {
       BestEvaluated = std::move(NewDNA);
     }
+
+    ++Generation;
   }
 
   return BestEvaluated->getGenes();
 }
 
-void RMHCSolver::Solve(llvm::Module *, TestModeInfo) {}
+bool RMHCSolver::hasStagnated(unsigned N) {
+  if (History.size() <= N)
+    return false;
 
-void RMHCSolver::Evaluate() {}
+  size_t Size = History.size();
+
+  return History[Size - N - 1] == History[Size - 1];
+}
+
+void RMHCSolver::Solve(llvm::Module *, TestModeInfo) {}
 
 std::unique_ptr<DNA> RMHCSolver::generateInitialDNA() {
   return std::make_unique<DNA>(O3_PASSES);
@@ -44,7 +55,7 @@ std::unique_ptr<DNA> RMHCSolver::generateInitialDNA() {
 std::unique_ptr<DNA> RMHCSolver::mutate(const std::vector<std::string> &D) {
   size_t Size = D.size();
 
-  MutationKind Kind = static_cast<MutationKind>(getRandomNumber(0, 4));
+  auto Kind = static_cast<MutationKind>(getRandomNumber(0, 4));
 
   std::vector<std::string> NewGene = D;
 

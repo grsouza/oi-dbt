@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AOSIROpt.hpp"
-#include "AOSLog.hpp"
 #include "AOSPasses.hpp"
 #include "CodeAnalyzer.hpp"
 
@@ -10,11 +9,6 @@
 namespace dbt {
 
 inline int getRandomNumber(int min, int max) { return (rand() % max) + min; }
-
-inline float getRandomRate() {
-  float r = getRandomNumber(0, 10);
-  return (r /= 10);
-}
 
 class DNA {
 protected:
@@ -25,14 +19,15 @@ protected:
   double Fitness;
 
 public:
-  DNA(std::vector<std::string> Genes) : Genes(std::move(Genes)) {
+  explicit DNA(std::vector<std::string> Genes) : Genes(std::move(Genes)) {
     IRO = llvm::make_unique<AOSIROpt>();
     CA = llvm::make_unique<CodeAnalyzer>();
     FitnessCalculated = false;
+    Fitness = 0;
   }
 
   DNA &operator=(const DNA &Other) noexcept {
-    Genes = std::move(Other.Genes);
+    Genes = Other.Genes;
     Fitness = Other.Fitness;
     FitnessCalculated = Other.FitnessCalculated;
     return *this;
@@ -40,7 +35,6 @@ public:
 
   double getFitness(std::shared_ptr<llvm::Module> M);
 
-  const std::vector<std::string> &getGenes() const { return Genes; }
   std::vector<std::string> getGenes() { return Genes; }
 
 private:

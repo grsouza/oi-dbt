@@ -12,7 +12,7 @@
 using namespace dbt;
 
 static std::string exec(const char *cmd) {
-  std::array<char, 128> buffer;
+  std::array<char, 128> buffer{};
   std::string result;
   std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
 
@@ -27,7 +27,7 @@ static std::string exec(const char *cmd) {
   return result;
 }
 
-double CodeAnalyzer::getIPC(std::shared_ptr<llvm::Module> M) {
+double CodeAnalyzer::getIPC(const std::shared_ptr<llvm::Module> &M) {
   std::string MCAResult;
   std::string ipc = "";
   int k = 0;
@@ -57,7 +57,7 @@ double CodeAnalyzer::getIPC(std::shared_ptr<llvm::Module> M) {
     }
   }
   // remove module.bc and module.s
-  // std::system("rm module.*");
+  std::system("rm module.*");
   if (ipc.size() == 0) {
     std::cerr << "Problems with llvm-mca!\n";
     exit(1);

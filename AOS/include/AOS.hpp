@@ -34,11 +34,15 @@ public:
                     const std::string &);
 
   void run(llvm::Module *);
+
   void run(llvm::Module *, TestModeInfo);
+
   void generateData();
 
 private:
   AOS(const AOSParams &, const std::string &, const std::string &);
+
+  static double calculateImproveRate(const std::vector<double> &History);
 };
 
 } // namespace dbt

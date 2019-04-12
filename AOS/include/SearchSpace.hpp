@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AOSPasses.hpp"
-#include "llvm/Support/YAMLTraits.h"
 #include <string>
 #include <vector>
 
@@ -9,7 +8,7 @@ using namespace llvm::yaml;
 
 namespace dbt {
 
-static std::vector<std::string> O3_PASSES = {
+static const std::vector<std::string> O3_PASSES = {
     // PASS_AA,
     PASS_ADCE,
     PASS_AGGRESSIVE_INSTCOMBINE,

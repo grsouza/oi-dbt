@@ -19,7 +19,8 @@ set(CMAKE_CXX_ARCHIVE_FINISH   true)
 #SET(CMAKE_AR  "gcc-ar")
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 
-include_directories(include)
+include_directories(include AOS/include)
+
 
 add_subdirectory(AOS)
 add_subdirectory(RFT)

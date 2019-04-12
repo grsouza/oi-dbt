@@ -49,8 +49,8 @@
 //   public:
 //     GASolver(const GASolverParams &Params) : AOSSolver(), Params(Params),
 //       TotalRegion(0) {}
-//     std::vector<uint16_t> Solve(llvm::Module*) override;
-//     void Solve(llvm::Module *, TestModeInfo) override;
+//     std::vector<uint16_t> solve(llvm::Module*) override;
+//     void solve(llvm::Module *, TestModeInfo) override;
 //     void Evaluate() override;
 //   };
 // } // namespace dbt

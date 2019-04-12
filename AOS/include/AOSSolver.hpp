@@ -1,11 +1,11 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include "AOSDatabase.hpp"
 #include "AOSIROpt.hpp"
-#include "AOSLog.hpp"
 #include "CodeAnalyzer.hpp"
 
 #include "llvm/Bitcode/BitcodeWriter.h"
@@ -14,17 +14,17 @@
 
 namespace dbt {
 struct TestModeInfo;
-struct AOSSolverParams {};
+
 class AOSSolver {
-protected:
-  std::unique_ptr<AOSLog> LOG;
-
 public:
-  AOSSolver() { LOG = std::make_unique<AOSLog>("AOSLog.out"); }
+  AOSSolver() = default;
 
-  virtual ~AOSSolver() {}
-  virtual std::vector<std::string> Solve(llvm::Module *) = 0;
+  virtual ~AOSSolver() = default;
+
+  virtual std::vector<std::string> solve(llvm::Module *M) = 0;
+
+  virtual std::vector<double> getHistory() const = 0;
+
   virtual void Solve(llvm::Module *, TestModeInfo) = 0;
-  virtual void Evaluate() = 0;
 };
 } // namespace dbt

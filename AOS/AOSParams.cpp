@@ -17,7 +17,6 @@ using namespace llvm::yaml;
 void MappingTraits<RMHCSolverParams>::mapping(IO &io,
                                               RMHCSolverParams &params) {
   io.mapRequired("generations", params.Generations);
-  // io.mapRequired("searchSpace", params.SearchSpace);
   io.mapRequired("min", params.Min);
   io.mapRequired("max", params.Max);
   io.mapRequired("size", params.Size);
@@ -27,7 +26,6 @@ void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
   io.mapRequired("times", params.times);
   io.mapRequired("updateDatabase", params.updateDatabase);
   io.mapRequired("database", params.database);
-  // io.mapRequired("threshold", params.threshold);
   io.mapRequired("max", params.max);
   io.mapRequired("min", params.min);
   io.mapRequired("onlyOnce", params.onlyOnce);

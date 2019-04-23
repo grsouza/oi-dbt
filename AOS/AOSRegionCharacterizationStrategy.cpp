@@ -2,8 +2,7 @@
 
 using namespace dbt;
 
-std::string
-DNARegionCharacterizationStrategy::getCharacterization(const llvm::Module &M) {
+std::string DNARegionCharacterizationStrategy::encode(const llvm::Module &M) {
   std::string Repr;
 
   for (auto &Func : M) {

@@ -13,18 +13,13 @@
 #include <llvm/Support/FileSystem.h>
 
 namespace dbt {
-struct TestModeInfo;
+struct ROIInfo;
 
-class AOSSolver {
+class AOSICSolver {
 public:
-  AOSSolver() = default;
-
-  virtual ~AOSSolver() = default;
-
-  virtual std::vector<std::string> solve(llvm::Module *M) = 0;
-
-  virtual std::vector<double> getHistory() const = 0;
-
-  virtual void Solve(llvm::Module *, TestModeInfo) = 0;
+  AOSICSolver() = default;
+  virtual ~AOSICSolver() = default;
+  virtual std::vector<std::string> solve(llvm::Module *M, unsigned) = 0;
+  virtual void solve(llvm::Module *, ROIInfo, unsigned) = 0;
 };
 } // namespace dbt

@@ -1,33 +1,26 @@
 #pragma once
 
 #include "AOSDatabase.hpp"
-#include "AOSSolver.hpp"
+#include "AOSICSolver.hpp"
+#include "AOSParams.hpp"
 #include "DNA.hpp"
 #include "SearchSpace.hpp"
 
 namespace dbt {
-struct TestModeInfo;
+struct ROIInfo;
 
-struct RMHCSolverParams {
-  unsigned Size, Max, Min;
-  unsigned Generations;
-  unsigned Threshold;
-};
+class RMHCSolver : public AOSICSolver {
 
-class RMHCSolver : public AOSSolver {
-
-  RMHCSolverParams Params;
-  std::unique_ptr<DNA> BestEvaluated;
+  AOSParams::RMHCSolverParams Params;
+  std::unique_ptr<DNA> Best;
   std::vector<double> History;
 
 public:
-  RMHCSolver(RMHCSolverParams Params);
+  RMHCSolver(AOSParams::RMHCSolverParams Params)
+      : AOSICSolver(), Params(Params) {}
 
-  std::vector<std::string> solve(llvm::Module *M) override;
-
-  void Solve(llvm::Module *, TestModeInfo) override;
-
-  std::vector<double> getHistory() const override { return History; }
+  std::vector<std::string> solve(llvm::Module *M, unsigned) override;
+  void solve(llvm::Module *, ROIInfo, unsigned) override;
 
 private:
   static std::unique_ptr<DNA> mutate(const std::vector<std::string> &D);

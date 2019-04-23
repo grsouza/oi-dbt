@@ -1,9 +1,12 @@
 #pragma once
 
+#include "AOSDatabase.hpp"
+#include "AOSICSolver.hpp"
+#include "AOSMLSolver.hpp"
 #include "AOSParams.hpp"
 #include "AOSRegionCharacterizationStrategy.hpp"
 #include "AOSSimilarityStrategy.hpp"
-#include "AOSSolver.hpp"
+#include "DNA.hpp"
 #include "manager.hpp"
 
 #include "llvm/ADT/SmallString.h"
@@ -17,32 +20,36 @@
 
 namespace dbt {
 
-struct TestModeInfo;
+struct ROIInfo;
 
 class AOS {
+
   AOSParams Params;
-  std::string Program;
-  std::string DatabaseDirectoryPath;
-  std::unique_ptr<AOSSolver> Solver;
-  std::unique_ptr<AOSSimilarityStrategy> SimilarityStrategy;
-  std::unique_ptr<AOSRegionCharacterizationStrategy>
-      RegionCharacterizationStrategy;
-  std::vector<Data> Regions;
+
+  std::unique_ptr<AOSICSolver> ICSolver;
+  std::unique_ptr<AOSMLSolver> MLSolver;
+
+  std::unique_ptr<AOSRegionCharacterizationStrategy> CTZ;
+  unsigned NOR; // Number of Regions
+  std::string BinaryName;
 
 public:
-  static AOS create(const std::string &, const std::string &,
-                    const std::string &);
+  AOS(const std::string &, const std::string &, const std::string &);
 
   void run(llvm::Module *);
+  void run(llvm::Module *, ROIInfo);
 
-  void run(llvm::Module *, TestModeInfo);
+  std::unique_ptr<RegionData> makeDatabaseData(DNA *, const std::string &);
 
-  void generateData();
+  void generateDatabase(std::unique_ptr<RegionData>);
+  void loadDatabase();
+
+  bool isTraining() { return Params.Training; }
 
 private:
-  AOS(const AOSParams &, const std::string &, const std::string &);
-
-  static double calculateImproveRate(const std::vector<double> &History);
+  void getBinaryName(const std::string &Path);
+  void runIC(llvm::Module *M);
+  void runML(llvm::Module *M);
 };
 
 } // namespace dbt

@@ -25,9 +25,9 @@
 #define NATIVE_REGION_SIZE 1000000
 
 namespace dbt {
-struct TestModeInfo {
+struct ROIInfo {
   unsigned RegionID;
-  std::vector<uint16_t> Opts;
+  std::vector<std::string> Opts;
 };
 class IREmitter;
 class Machine;
@@ -42,7 +42,7 @@ private:
   dbt::AOS &TheAOS;
   std::string RegionPath;
 
-  TestModeInfo Test;
+  ROIInfo ROI;
 
   std::vector<uint32_t> OIRegionsKey;
   spp::sparse_hash_map<uint32_t, OIInstList> OIRegions;
@@ -83,7 +83,7 @@ private:
 
   bool VerboseOutput = false;
   bool LockMode = false;
-  bool TestMode = false;
+  bool ROIMode = false;
 
   std::unordered_map<uint32_t, llvm::Module *> ModulesLoaded;
   bool IsToLoadRegions = false;
@@ -114,8 +114,6 @@ public:
       loadRegionsFromFiles();
     ThreadPool.push_back(std::thread(&Manager::runPipeline, this));
   }
-
-  void dumpRegionsData();
 
   void dumpStats() {
     std::cerr << "Compiled Regions: " << std::dec << CompiledRegions << "\n";
@@ -156,13 +154,13 @@ public:
 
   bool getLockMode() { return LockMode; }
 
-  void setTestMode() { TestMode = true; }
+  void setROIMode() { ROIMode = true; }
 
-  bool getTestMode() { return TestMode; }
+  bool getROIMode() { return ROIMode; }
 
-  void setTestModeInfo(TestModeInfo T) { Test = T; }
+  void setROI(ROIInfo R) { ROI = R; }
 
-  TestModeInfo getTestModeInfo() { return Test; }
+  ROIInfo getROI() { return ROI; }
 
   unsigned getCompiledRegions(void) { return CompiledRegions; }
 

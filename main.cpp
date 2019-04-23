@@ -12,15 +12,7 @@
 #include <timer.hpp>
 
 clarg::argString AOSFlag("-aos", "Adaptive Optimization System input file", "");
-clarg::argString DBFlag("-db", "Database file path", "database.db");
-clarg::argString
-    TestFlag("-testmode",
-             "Optimizer only one region with optimization sequence provided",
-             "");
-clarg::argBool LockModeFlag(
-    "-lockmode",
-    "Blocks the emulator when a region is encountered until it's compiled");
-
+clarg::argString ROIFlag("-roi", "Region of investigation", "");
 clarg::argString RFTFlag("-rft", "Region Formation Technique (net)",
                          "netplus-e-r");
 clarg::argInt HotnessFlag("-hot", "Hotness threshold for the RFTs", 50);
@@ -204,43 +196,43 @@ int main(int argc, char **argv) {
     return 2;
   }
 
-  dbt::AOS A = dbt::AOS::create(AOSFlag.get_value(), BinaryFlag.get_value(),
-                                DBFlag.get_value());
-  dbt::Manager TheManager(M.getDataMemOffset(), M, A, VerboseFlag.was_set(),
-                          InlineFlag.was_set());
+  dbt::AOS TheAOS(AOSFlag.get_value(), BinaryFlag.get_value(),
+                  ArgumentsFlag.get_value());
+  dbt::Manager TheManager(M.getDataMemOffset(), M, TheAOS,
+                          VerboseFlag.was_set(), InlineFlag.was_set());
 
-  if (LockModeFlag.get_value() == true) {
+  if (TheAOS.isTraining())
     TheManager.setLockMode();
-  }
 
-  if (TestFlag.was_set()) {
-    dbt::TestModeInfo T;
-    unsigned i = 0, Buffer = 0;
-    std::string Info = TestFlag.get_value();
-    char c = Info[i];
+  if (ROIFlag.was_set()) {
+    dbt::ROIInfo ROI;
+    // unsigned i = 0, Buffer = 0;
+    // std::string Info = ROIFlag.get_value();
+    // char c = Info[i];
 
-    T.RegionID = 0;
+    // ROI.RegionID = 0;
 
-    while (c != ':') {
-      T.RegionID = T.RegionID * 10 + c - 48;
-      c = Info[++i];
-    }
+    // while (c != ':') {
+    //   ROI.RegionID = ROI.RegionID * 10 + c - 48;
+    //   c = Info[++i];
+    // }
 
-    c = Info[++i];
+    // c = Info[++i];
 
-    while (i < Info.size()) {
-      if (c == '-') {
-        T.Opts.push_back(Buffer);
-        Buffer = 0;
-        c = Info[++i];
-      }
-      Buffer = Buffer * 10 + c - 48;
-      c = Info[++i];
-    }
-    T.Opts.push_back(Buffer);
+    // while (i < Info.size()) {
+    //   if (c == '-') {
+    //     ROI.Opts.push_back(Buffer);
+    //     Buffer = 0;
+    //     c = Info[++i];
+    //   }
+    //   Buffer = Buffer * 10 + c - 48;
+    //   c = Info[++i];
+    // }
+    // ROI.Opts.push_back(Buffer);
 
-    TheManager.setTestModeInfo(T);
-    TheManager.setTestMode();
+    TheManager.setROI(ROI);
+    TheManager.setROIMode();
+    TheManager.setLockMode();
   }
 
   if (LoadRegionsFlag.was_set() || LoadOIFlag.was_set() ||
@@ -341,8 +333,6 @@ int main(int argc, char **argv) {
   std::cerr << "Starting execution:\n";
 
   I.executeAll(M);
-
-  TheManager.dumpRegionsData();
 
   if (DumpRegionsFlag.was_set() || DumpOIRegionsFlag.was_set())
     TheManager.dumpRegions(MergeOIFlag.was_set(), DumpOIRegionsFlag.was_set());

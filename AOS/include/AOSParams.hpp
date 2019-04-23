@@ -1,7 +1,5 @@
 #pragma once
 
-#include "GASolver.hpp"
-#include "RMHCSolver.hpp"
 #include "llvm/Support/YAMLTraits.h"
 
 #include <iostream>
@@ -12,154 +10,107 @@ namespace dbt {
 
 struct AOSParams {
 
-  /* number of times to execute a program, and then calculate the average */
-  unsigned times;
+  bool UpdateDatabase;
+  bool CreateDatabase;
+  std::string Database;
+  bool Training;
 
-  /* update the databse with new insights */
-  bool updateDatabase;
-
-  /* path to database file */
-  std::string database;
-
-  /* compiler level optimization (or sequence) that will act as baseline */
-  //    Threshold threshold;
-
-  /* max sequence length */
-  unsigned max;
-
-  /* min sequence length */
-  unsigned min;
-
-  /* optimization appears only once */
-  bool onlyOnce;
-
-  /* region of interest */
-  unsigned roi;
-
-  struct ICStrategy {
-    enum Value {
-      // GA,
-      RMHC,
-    } value;
-    union Params {
-      // GASolverParams ga;
-      RMHCSolverParams rmhc;
-    } params;
-  } icStrategy;
-
-  /* the goal of the compiler */
-  enum Goal {
-    RUNTIME,
-    SIZE,
-    ENERGY,
+  struct SolverParams {
+    unsigned Max, Min, Times;
+    unsigned Generations;
+    unsigned Threshold;
   };
 
-  std::vector<Goal> objetive;
+  struct GASolverParams : public SolverParams {};
+  struct RMHCSolverParams : public SolverParams {};
 
-  /* indicates if it should create a database */
-  bool createDatabase;
+  struct ICStrategyType {
+    enum ValueType {
+      GA,
+      RMHC,
+    } Value;
+    union ParamsType {
+      GASolverParams GAParams;
+      RMHCSolverParams RMHCParams;
+    } Params;
+  } ICStrategy;
 
-  /* create a final report */
-  enum Report {
-    SIMPLE,
-    DETAILED,
-    NONE,
-  } report;
+  enum MCStrategyType {
+    CBR,
+    DPL,
+    RFL,
+    LTL,
+  } MCStrategy;
 
-  /* use iterative compilation as a training phase */
-  bool training;
-
-  /* the training programs */
-  std::vector<std::string> trainingPrograms;
-
-  /* Machine Learning strategy */
-  // struct MLStrategy {
-  //   enum Value {
-  //     /* Case-based reasoning */
-  //     CBR,
-  //     /* Deep learning */
-  //     DPL,
-  //     /* Reinforcement learning */
-  //     RFL,
-  //     /* Long-term learning */
-  //     LTL,
-  //   } value;
-  //   union Params {
-  //   } params;
-  // } mlStrategy;
-
-  /* strategy used to represent regions */
-  enum CharacterizationStrategy {
-    /* DNA-based approach (only the OpenISA instructions) */
+  enum CharacterizationStrategyType {
     DNA,
-    /* DNA-based aproach (OpenISA instructions + data type) */
     DND,
-    /* The complete region */
     FLL,
-  } characterization;
+  } CharacterizationStrategy;
 
-  /* strategy used to find similar regions */
-  enum SimilarityStrategy {
-    /* Needleman-Wunsh algorithm */
-    NAW,
-    /* Compress */
+  enum SimilarityStrategyType {
+    NaW,
     CMP,
-  } similarity;
+  } SimilarityStrategy;
 
-  /* strategy used to retrieve sequences */
-  enum RetrieveStrategy {
+  enum RetrieveStrategyType {
     ELITE,
     JUST,
     NEARLY,
-  } retrieve;
+  } RetrieveStrategy;
 
-  /* invoke an iterative compilation strategy in a second round */
-  bool invokeIC;
+  bool InvokeIC;
 };
 } // namespace dbt
 
-// template <> struct llvm::yaml::MappingTraits<dbt::GASolverParams> {
-//   static void mapping(llvm::yaml::IO &io, dbt::GASolverParams &params);
-// };
-
-template <> struct llvm::yaml::MappingTraits<dbt::RMHCSolverParams> {
-  static void mapping(llvm::yaml::IO &io, dbt::RMHCSolverParams &params);
-};
-
 template <> struct llvm::yaml::MappingTraits<dbt::AOSParams> {
-  static void mapping(llvm::yaml::IO &io, dbt::AOSParams &params);
-};
-
-template <>
-struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::ICStrategy::Value> {
-  static void enumeration(llvm::yaml::IO &io,
-                          dbt::AOSParams::ICStrategy::Value &strategy);
-};
-
-template <>
-struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::RetrieveStrategy> {
-  static void enumeration(llvm::yaml::IO &io,
-                          dbt::AOSParams::RetrieveStrategy &strategy);
-};
-
-template <>
-struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::SimilarityStrategy> {
-  static void enumeration(llvm::yaml::IO &io,
-                          dbt::AOSParams::SimilarityStrategy &strategy);
+  static void mapping(llvm::yaml::IO &, dbt::AOSParams &);
 };
 
 template <>
 struct llvm::yaml::ScalarEnumerationTraits<
-    dbt::AOSParams::CharacterizationStrategy> {
+    dbt::AOSParams::ICStrategyType::ValueType> {
+  static void enumeration(llvm::yaml::IO &,
+                          dbt::AOSParams::ICStrategyType::ValueType &);
+};
+
+template <> struct llvm::yaml::MappingTraits<dbt::AOSParams::GASolverParams> {
+  static void mapping(llvm::yaml::IO &io, dbt::AOSParams::GASolverParams &);
+};
+
+// template <> struct llvm::yaml::ScalarEnumerationTraits
+// <dbt::AOSParams::GASolverParams::InitialSearchSpaceType> {
+//   static void
+//     enumeration(llvm::yaml::IO &io,
+//         dbt::AOSParams::GASolverParams::InitialSearchSpaceType&);
+// };
+
+template <> struct llvm::yaml::MappingTraits<dbt::AOSParams::RMHCSolverParams> {
+  static void mapping(llvm::yaml::IO &, dbt::AOSParams::RMHCSolverParams &);
+};
+
+template <>
+struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::MCStrategyType> {
+  static void enumeration(llvm::yaml::IO &io, dbt::AOSParams::MCStrategyType &);
+};
+
+template <>
+struct llvm::yaml::ScalarEnumerationTraits<
+    dbt::AOSParams::CharacterizationStrategyType> {
   static void enumeration(llvm::yaml::IO &io,
-                          dbt::AOSParams::CharacterizationStrategy &strategy);
+                          dbt::AOSParams::CharacterizationStrategyType &);
 };
 
-template <> struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::Report> {
-  static void enumeration(llvm::yaml::IO &io, dbt::AOSParams::Report &report);
+template <>
+struct llvm::yaml::ScalarEnumerationTraits<
+    dbt::AOSParams::RetrieveStrategyType> {
+  static void enumeration(llvm::yaml::IO &io,
+                          dbt::AOSParams::RetrieveStrategyType &);
 };
 
-LLVM_YAML_IS_FLOW_SEQUENCE_VECTOR(dbt::AOSParams::Goal);
-template <> struct llvm::yaml::ScalarEnumerationTraits<dbt::AOSParams::Goal> {
-  static void enumeration(llvm::yaml::IO &io, dbt::AOSParams::Goal &goal);
+template <>
+struct llvm::yaml::ScalarEnumerationTraits<
+    dbt::AOSParams::SimilarityStrategyType> {
+  static void enumeration(llvm::yaml::IO &io,
+                          dbt::AOSParams::SimilarityStrategyType &);
 };

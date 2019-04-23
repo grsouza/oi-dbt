@@ -1,18 +1,22 @@
 #include "AOS.hpp"
 #include "AOSDatabase.hpp"
 #include "AOSParams.hpp"
+#include "RMHCSolver.hpp"
 
 #include <iostream>
 #include <string>
 #include <time.h>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 using llvm::yaml::Output;
 
 using namespace dbt;
 
-AOS AOS::create(const std::string &FilePath, const std::string &Program,
-                const std::string &DatabaseFilePath) {
-  auto InputBuffer = llvm::MemoryBuffer::getFile(FilePath);
+AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
+         const std::string &BinaryArgs) {
+  auto InputBuffer = llvm::MemoryBuffer::getFile(AOSFilePath);
   llvm::yaml::Input yin(InputBuffer->get()->getBuffer());
 
   AOSParams Params;
@@ -20,104 +24,123 @@ AOS AOS::create(const std::string &FilePath, const std::string &Program,
 
   if (yin.error()) {
     std::cerr << yin.error().message() << std::endl;
+    exit(1);
   }
 
-  return AOS(Params, Program, DatabaseFilePath);
-}
-
-AOS::AOS(const AOSParams &Params, const std::string &Program,
-         const std::string &DatabaseDirectoryPath)
-    : Params(Params), Program(Program),
-      DatabaseDirectoryPath(DatabaseDirectoryPath) {
-  switch (Params.icStrategy.value) {
+  switch (Params.ICStrategy.Value) {
     // case AOSParams::ICStrategy::GA:
     //   this->Solver = std::make_unique<GASolver>(Params.icStrategy.params.ga);
     //   break;
 
-  case AOSParams::ICStrategy::RMHC:
-    this->Solver = std::make_unique<RMHCSolver>(Params.icStrategy.params.rmhc);
+  case AOSParams::ICStrategyType::ValueType::RMHC:
+    ICSolver =
+        std::make_unique<RMHCSolver>(Params.ICStrategy.Params.RMHCParams);
     break;
   }
 
-  switch (Params.similarity) {
-  case AOSParams::SimilarityStrategy::NAW:
-    this->SimilarityStrategy = std::make_unique<NWAOSSimilarityStrategy>();
+  switch (Params.SimilarityStrategy) {
+  case AOSParams::SimilarityStrategyType::NaW:
+    // SimilarityStrategy = std::make_unique<NWAOSSimilarityStrategy>();
     break;
 
-  case AOSParams::SimilarityStrategy::CMP:
+  case AOSParams::SimilarityStrategyType::CMP:
     assert(false && "Strategy not supported.");
   }
 
-  switch (Params.characterization) {
-  case AOSParams::CharacterizationStrategy::DNA:
-    this->RegionCharacterizationStrategy =
-        std::make_unique<DNARegionCharacterizationStrategy>();
+  switch (Params.CharacterizationStrategy) {
+  case AOSParams::CharacterizationStrategyType::DNA:
+    CTZ = std::make_unique<DNARegionCharacterizationStrategy>();
     break;
 
-  case AOSParams::CharacterizationStrategy::DND:
+  case AOSParams::CharacterizationStrategyType::DND:
     assert(false && "Strategy not supported.");
     break;
 
-  case AOSParams::CharacterizationStrategy::FLL:
+  case AOSParams::CharacterizationStrategyType::FLL:
     assert(false && "Strategy not supported.");
     break;
+  }
+
+  getBinaryName(BinaryPath);
+
+  if (Params.Training && Params.CreateDatabase) {
+
+  } else if (!Params.Training) {
+  }
+}
+
+void AOS::getBinaryName(const std::string &Path) {
+  int Index = -1;
+
+  BinaryName = "";
+
+  for (unsigned i = 0; i < Path.size(); ++i) {
+    if (Path[i] == '/')
+      Index = i;
+  }
+
+  if (Index == -1) {
+    BinaryName += Path;
+  } else {
+    for (unsigned i = Index + 1; i < Path.size(); ++i) {
+      BinaryName += Path[i];
+    }
   }
 }
 
 void AOS::run(llvm::Module *M) {
-  float CompileTime;
-  time_t t_start, t_end;
+  NOR++;
 
-  std::string DNARegion =
-      RegionCharacterizationStrategy->getCharacterization(*M);
-
-  t_start = time(nullptr);
-  auto SeqOpts = Solver->solve(M);
-  t_end = time(nullptr);
-
-  CompileTime = difftime(t_end, t_start);
-
-  Data D;
-  D.Program = Program;
-  D.DNA = DNARegion;
-  D.CompileTime = CompileTime;
-  D.SetOpts = SeqOpts;
-  D.ExecTime = 0;
-  D.History = Solver->getHistory();
-  D.ImproveRate = calculateImproveRate(Solver->getHistory());
-
-  Regions.push_back(D);
+  if (Params.Training) {
+    runIC(M);
+  } else {
+    runML(M);
+  }
 }
 
-void AOS::run(llvm::Module *M, TestModeInfo T) { this->Solver->Solve(M, T); }
-
-void AOS::generateData() {
-
-  std::ofstream RegionsFile("regions.out");
-  std::ofstream DBFile("db.out");
-
-  for (const auto &Region : Regions) {
-    RegionsFile << Region.DNA << std::endl << std::endl;
-  }
-
-  if (!Regions.empty()) {
-    std::string Text;
-
-    llvm::raw_string_ostream Stream(Text);
-    llvm::yaml::Output yout(Stream);
-
-    yout << Regions;
-
-    DBFile << Stream.str();
-  }
-
-  RegionsFile.close();
-  DBFile.close();
+void AOS::runIC(llvm::Module *M) {
+  std::string DNA = CTZ->encode(*M);
+  auto ICData = ICSolver->solve(M, NOR);
 }
 
-double AOS::calculateImproveRate(const std::vector<double> &History) {
-  double Worst = History[0];
-  double Best = History[History.size() - 1];
+void AOS::runML(llvm::Module *M) {}
 
-  return 1 - (Best / Worst);
+void AOS::run(llvm::Module *M, ROIInfo R) {
+  NOR++;
+  ICSolver->solve(M, R, NOR);
+}
+
+void AOS::generateDatabase(std::unique_ptr<RegionData> RD) {
+  std::ofstream File;
+  std::string Text;
+
+  std::string FileName =
+      Params.Database + BinaryName + std::to_string(NOR) + ".yaml";
+  File.open(FileName, std::fstream::app);
+
+  if (!File) {
+    exit(1);
+  }
+
+  llvm::raw_string_ostream Stream(Text);
+  llvm::yaml::Output yout(Stream);
+
+  yout << *(RD.get());
+  File << Stream.str();
+
+  File.close();
+}
+
+void AOS::loadDatabase() {
+  RegionData RD;
+
+  for (const auto &Entry : fs::directory_iterator(Params.Database)) {
+    auto InputBuffer = llvm::MemoryBuffer::getFile(Entry.path().c_str());
+    llvm::yaml::Input yin(InputBuffer->get()->getBuffer());
+
+    yin >> RD;
+
+    std::cout << RD.DNA << std::endl;
+    std::cout << RD.Best.TAs.size() << std::endl;
+  }
 }

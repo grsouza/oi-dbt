@@ -11,30 +11,27 @@
 
 using namespace dbt;
 
-RMHCSolver::RMHCSolver(RMHCSolverParams Params) : AOSSolver(), Params(Params) {}
+std::vector<std::string> RMHCSolver::solve(llvm::Module *M, unsigned NOR) {
 
-std::vector<std::string> RMHCSolver::solve(llvm::Module *M) {
-
-  BestEvaluated = generateInitialDNA();
+  Best = generateInitialDNA();
   History.clear();
 
   unsigned Generation = 0;
 
   while (Generation < Params.Generations && !hasStagnated(Params.Threshold)) {
-    History.push_back(
-        BestEvaluated->getFitness(std::move(llvm::CloneModule(*M))));
+    History.push_back(Best->getFitness(std::move(llvm::CloneModule(*M))));
 
-    auto NewDNA = std::move(mutate(BestEvaluated->getGenes()));
+    auto NewDNA = std::move(mutate(Best->getGenes()));
 
     if (NewDNA->getFitness(std::move(llvm::CloneModule(*M))) <
-        BestEvaluated->getFitness(std::move(llvm::CloneModule(*M)))) {
-      BestEvaluated = std::move(NewDNA);
+        Best->getFitness(std::move(llvm::CloneModule(*M)))) {
+      Best = std::move(NewDNA);
     }
 
     ++Generation;
   }
 
-  return BestEvaluated->getGenes();
+  return Best->getGenes();
 }
 
 bool RMHCSolver::hasStagnated(unsigned N) {
@@ -46,7 +43,7 @@ bool RMHCSolver::hasStagnated(unsigned N) {
   return History[Size - N - 1] == History[Size - 1];
 }
 
-void RMHCSolver::Solve(llvm::Module *, TestModeInfo) {}
+void RMHCSolver::solve(llvm::Module *, ROIInfo ROI, unsigned NOR) {}
 
 std::unique_ptr<DNA> RMHCSolver::generateInitialDNA() {
   return std::make_unique<DNA>(O3_PASSES);

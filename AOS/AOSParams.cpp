@@ -4,91 +4,88 @@
 using namespace dbt;
 using namespace llvm::yaml;
 
-// void MappingTraits<GASolverParams>::mapping(IO &io, GASolverParams &params) {
-//   io.mapRequired("generations", params.Generations);
-//   io.mapRequired("mutationRate", params.MutationRate);
-//   io.mapRequired("crossoverRate", params.CrossoverRate);
-//   io.mapRequired("searchSpace", params.SearchSpace);
-//   io.mapRequired("populationSize", params.PopulationSize);
-//   io.mapRequired("max", params.Max);
-//   io.mapRequired("min", params.Min);
-// }
+void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &Params) {
+  io.mapRequired("updateDatabase", Params.UpdateDatabase);
+  io.mapRequired("createDatabase", Params.CreateDatabase);
+  io.mapRequired("training", Params.Training);
+  io.mapRequired("database", Params.Database);
+  io.mapRequired("icStrategy", Params.ICStrategy.Value);
 
-void MappingTraits<RMHCSolverParams>::mapping(IO &io,
-                                              RMHCSolverParams &params) {
-  io.mapRequired("generations", params.Generations);
-  io.mapRequired("threshold", params.Threshold);
-  io.mapRequired("min", params.Min);
-  io.mapRequired("max", params.Max);
-  io.mapRequired("size", params.Size);
-}
-
-void MappingTraits<AOSParams>::mapping(IO &io, AOSParams &params) {
-  io.mapRequired("times", params.times);
-  io.mapRequired("updateDatabase", params.updateDatabase);
-  io.mapRequired("database", params.database);
-  io.mapRequired("max", params.max);
-  io.mapRequired("min", params.min);
-  io.mapRequired("onlyOnce", params.onlyOnce);
-  io.mapRequired("roi", params.roi);
-  io.mapRequired("icStrategy", params.icStrategy.value);
-
-  switch (params.icStrategy.value) {
-  // case AOSParams::ICStrategy::Value::GA:
-  //   io.mapRequired("icStrategyParams", params.icStrategy.params.ga);
-  //   break;
-  case AOSParams::ICStrategy::Value::RMHC:
-    io.mapRequired("icStrategyParams", params.icStrategy.params.rmhc);
+  switch (Params.ICStrategy.Value) {
+  case AOSParams::ICStrategyType::ValueType::GA:
+    io.mapRequired("icStrategyParams", Params.ICStrategy.Params.GAParams);
     break;
+  case AOSParams::ICStrategyType::ValueType::RMHC:
+    io.mapRequired("icStrategyParams", Params.ICStrategy.Params.RMHCParams);
   }
 
-  io.mapRequired("retrieving", params.retrieve);
-  // io.mapRequired("trainingPrograms", params.trainingPrograms);
-  io.mapRequired("similarity", params.similarity);
-  io.mapRequired("createDatabase", params.createDatabase);
-  io.mapRequired("characterization", params.characterization);
-  io.mapRequired("invokeIC", params.invokeIC);
-  io.mapRequired("objective", params.objetive);
-  io.mapRequired("report", params.report);
-  io.mapRequired("training", params.training);
+  io.mapRequired("mcStrategy", Params.MCStrategy);
+  io.mapRequired("characterization", Params.CharacterizationStrategy);
+  io.mapRequired("retrieving", Params.RetrieveStrategy);
+  io.mapRequired("similarity", Params.SimilarityStrategy);
+  io.mapRequired("invokeIC", Params.InvokeIC);
 }
 
-void ScalarEnumerationTraits<AOSParams::ICStrategy::Value>::enumeration(
-    IO &io, AOSParams::ICStrategy::Value &strategy) {
-  // io.enumCase(strategy, "GA", AOSParams::ICStrategy::Value::GA);
-  io.enumCase(strategy, "RMHC", AOSParams::ICStrategy::Value::RMHC);
+void ScalarEnumerationTraits<AOSParams::ICStrategyType::ValueType>::enumeration(
+    IO &io, AOSParams::ICStrategyType::ValueType &Strategy) {
+  io.enumCase(Strategy, "GA", AOSParams::ICStrategyType::ValueType::GA);
+  io.enumCase(Strategy, "RMHC", AOSParams::ICStrategyType::ValueType::RMHC);
 }
 
-void ScalarEnumerationTraits<AOSParams::RetrieveStrategy>::enumeration(
-    IO &io, AOSParams::RetrieveStrategy &strategy) {
-  io.enumCase(strategy, "ELITE", AOSParams::RetrieveStrategy::ELITE);
-  io.enumCase(strategy, "JUST", AOSParams::RetrieveStrategy::JUST);
-  io.enumCase(strategy, "NEARLY", AOSParams::RetrieveStrategy::NEARLY);
+void MappingTraits<AOSParams::GASolverParams>::mapping(
+    IO &io, AOSParams::GASolverParams &Params) {
+  io.mapRequired("max", Params.Max);
+  io.mapRequired("min", Params.Min);
+  io.mapRequired("times", Params.Times);
+  io.mapRequired("generations", Params.Generations);
+  io.mapRequired("threshold", Params.Threshold);
 }
 
-void ScalarEnumerationTraits<AOSParams::SimilarityStrategy>::enumeration(
-    IO &io, AOSParams::SimilarityStrategy &strategy) {
-  io.enumCase(strategy, "NaW", AOSParams::SimilarityStrategy::NAW);
-  io.enumCase(strategy, "CMP", AOSParams::SimilarityStrategy::CMP);
+// void ScalarEnumerationTraits<
+//     AOSParams::GASolverParams::InitialSearchSpaceType>::
+//     enumeration(IO &io,
+//                 AOSParams::GASolverParams::InitialSearchSpaceType &Space) {
+//   io.enumCase(Space, "RANDOM",
+//               AOSParams::GASolverParams::InitialSearchSpaceType::RANDOM);
+//   io.enumCase(Space, "BEST10",
+//               AOSParams::GASolverParams::InitialSearchSpaceType::BEST10);
+//   io.enumCase(Space, "BASELINE",
+//               AOSParams::GASolverParams::InitialSearchSpaceType::BASELINE);
+// }
+
+void MappingTraits<AOSParams::RMHCSolverParams>::mapping(
+    IO &io, AOSParams::RMHCSolverParams &Params) {
+  io.mapRequired("max", Params.Max);
+  io.mapRequired("min", Params.Min);
+  io.mapRequired("times", Params.Times);
+  io.mapRequired("generations", Params.Generations);
+  io.mapRequired("threshold", Params.Threshold);
 }
 
-void ScalarEnumerationTraits<AOSParams::CharacterizationStrategy>::enumeration(
-    IO &io, AOSParams::CharacterizationStrategy &strategy) {
-  io.enumCase(strategy, "DNA", AOSParams::CharacterizationStrategy::DNA);
-  io.enumCase(strategy, "DND", AOSParams::CharacterizationStrategy::DND);
-  io.enumCase(strategy, "FLL", AOSParams::CharacterizationStrategy::FLL);
+void ScalarEnumerationTraits<AOSParams::MCStrategyType>::enumeration(
+    IO &io, AOSParams::MCStrategyType &Param) {
+  io.enumCase(Param, "CBR", AOSParams::MCStrategyType::CBR);
+  io.enumCase(Param, "DPL", AOSParams::MCStrategyType::DPL);
+  io.enumCase(Param, "RFL", AOSParams::MCStrategyType::RFL);
+  io.enumCase(Param, "LTL", AOSParams::MCStrategyType::LTL);
 }
 
-void ScalarEnumerationTraits<AOSParams::Goal>::enumeration(
-    IO &io, AOSParams::Goal &goal) {
-  io.enumCase(goal, "runtime", AOSParams::Goal::RUNTIME);
-  io.enumCase(goal, "size", AOSParams::Goal::SIZE);
-  io.enumCase(goal, "energy", AOSParams::Goal::ENERGY);
+void ScalarEnumerationTraits<AOSParams::CharacterizationStrategyType>::
+    enumeration(IO &io, AOSParams::CharacterizationStrategyType &Param) {
+  io.enumCase(Param, "DNA", AOSParams::CharacterizationStrategyType::DNA);
+  io.enumCase(Param, "DND", AOSParams::CharacterizationStrategyType::DND);
+  io.enumCase(Param, "FLL", AOSParams::CharacterizationStrategyType::FLL);
 }
 
-void ScalarEnumerationTraits<AOSParams::Report>::enumeration(
-    IO &io, AOSParams::Report &report) {
-  io.enumCase(report, "SIMPLE", AOSParams::Report::SIMPLE);
-  io.enumCase(report, "DETAILED", AOSParams::Report::DETAILED);
-  io.enumCase(report, "NONE", AOSParams::Report::NONE);
+void ScalarEnumerationTraits<AOSParams::RetrieveStrategyType>::enumeration(
+    IO &io, AOSParams::RetrieveStrategyType &Param) {
+  io.enumCase(Param, "ELITE", AOSParams::RetrieveStrategyType::ELITE);
+  io.enumCase(Param, "JUST", AOSParams::RetrieveStrategyType::JUST);
+  io.enumCase(Param, "NEARLY", AOSParams::RetrieveStrategyType::NEARLY);
+}
+
+void ScalarEnumerationTraits<AOSParams::SimilarityStrategyType>::enumeration(
+    IO &io, AOSParams::SimilarityStrategyType &Param) {
+  io.enumCase(Param, "NaW", AOSParams::SimilarityStrategyType::NaW);
+  io.enumCase(Param, "CMP", AOSParams::SimilarityStrategyType::CMP);
 }

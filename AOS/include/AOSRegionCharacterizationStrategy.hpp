@@ -7,12 +7,12 @@ namespace dbt {
 
 class AOSRegionCharacterizationStrategy {
 public:
-  virtual std::string getCharacterization(const llvm::Module &) = 0;
+  virtual std::string encode(const llvm::Module &) = 0;
 };
 
 class DNARegionCharacterizationStrategy
     : public AOSRegionCharacterizationStrategy {
 public:
-  std::string getCharacterization(const llvm::Module &);
+  std::string encode(const llvm::Module &);
 };
 }; // namespace dbt

@@ -186,10 +186,10 @@ void Manager::runPipeline() {
         for (auto &BB : F)
           Size += BB.size();
 
-      if (!ROIMode) {
-        TheAOS.run(Module);
-      } else {
+      if (ROIMode) {
         TheAOS.run(Module, ROI);
+      } else {
+        TheAOS.run(Module);
       }
 
       for (auto &F : *Module)

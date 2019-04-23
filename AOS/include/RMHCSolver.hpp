@@ -19,7 +19,7 @@ public:
   RMHCSolver(AOSParams::RMHCSolverParams Params)
       : AOSICSolver(), Params(Params) {}
 
-  std::vector<std::string> solve(llvm::Module *M, unsigned) override;
+  std::unique_ptr<DNA> solve(llvm::Module *M, unsigned) override;
   void solve(llvm::Module *, ROIInfo, unsigned) override;
 
 private:

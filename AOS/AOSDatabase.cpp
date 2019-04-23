@@ -14,6 +14,7 @@ void MappingTraits<RegionData>::mapping(IO &io, RegionData &D) {
 
 void MappingTraits<Data>::mapping(IO &io, Data &D) {
   io.mapRequired("TAs", D.TAs);
+  io.mapRequired("IPC", D.IPC);
   io.mapRequired("CompilationTime", D.CompilationTime);
   io.mapRequired("ExecutionTime", D.ExecutionTime);
 }

@@ -7,6 +7,7 @@
 #include "AOSDatabase.hpp"
 #include "AOSIROpt.hpp"
 #include "CodeAnalyzer.hpp"
+#include "DNA.hpp"
 
 #include "llvm/Bitcode/BitcodeWriter.h"
 #include "llvm/IR/Module.h"
@@ -19,7 +20,7 @@ class AOSICSolver {
 public:
   AOSICSolver() = default;
   virtual ~AOSICSolver() = default;
-  virtual std::vector<std::string> solve(llvm::Module *M, unsigned) = 0;
+  virtual std::unique_ptr<DNA> solve(llvm::Module *M, unsigned) = 0;
   virtual void solve(llvm::Module *, ROIInfo, unsigned) = 0;
 };
 } // namespace dbt

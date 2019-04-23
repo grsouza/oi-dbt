@@ -1,4 +1,5 @@
 #include "RMHCSolver.hpp"
+#include "AOSIROpt.hpp"
 #include "DNA.hpp"
 #include "SearchSpace.hpp"
 #include "manager.hpp"
@@ -11,27 +12,28 @@
 
 using namespace dbt;
 
-std::vector<std::string> RMHCSolver::solve(llvm::Module *M, unsigned NOR) {
+std::unique_ptr<DNA> RMHCSolver::solve(llvm::Module *M, unsigned RegionID) {
 
   Best = generateInitialDNA();
+  Best->calculateFitness(std::move(llvm::CloneModule(*M)));
   History.clear();
 
   unsigned Generation = 0;
 
   while (Generation < Params.Generations && !hasStagnated(Params.Threshold)) {
-    History.push_back(Best->getFitness(std::move(llvm::CloneModule(*M))));
+    History.push_back(Best->getFitness());
 
     auto NewDNA = std::move(mutate(Best->getGenes()));
+    NewDNA->calculateFitness(std::move(llvm::CloneModule(*M)));
 
-    if (NewDNA->getFitness(std::move(llvm::CloneModule(*M))) <
-        Best->getFitness(std::move(llvm::CloneModule(*M)))) {
+    if (NewDNA->getFitness() < Best->getFitness()) {
       Best = std::move(NewDNA);
     }
 
     ++Generation;
   }
 
-  return Best->getGenes();
+  return std::move(Best);
 }
 
 bool RMHCSolver::hasStagnated(unsigned N) {
@@ -43,7 +45,12 @@ bool RMHCSolver::hasStagnated(unsigned N) {
   return History[Size - N - 1] == History[Size - 1];
 }
 
-void RMHCSolver::solve(llvm::Module *, ROIInfo ROI, unsigned NOR) {}
+void RMHCSolver::solve(llvm::Module *M, ROIInfo R, unsigned RegionID) {
+  if (RegionID == R.RegionID) {
+    auto IRO = std::make_unique<AOSIROpt>();
+    IRO->customOptimizeIRFunction(M, R.Opts);
+  }
+}
 
 std::unique_ptr<DNA> RMHCSolver::generateInitialDNA() {
   return std::make_unique<DNA>(O3_PASSES);

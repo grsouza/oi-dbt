@@ -12,6 +12,7 @@ namespace dbt {
 
 struct Data {
   std::vector<std::string> TAs;
+  double IPC;
   double CompilationTime;
   double ExecutionTime;
 };

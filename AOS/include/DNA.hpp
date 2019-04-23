@@ -33,12 +33,10 @@ public:
     return *this;
   }
 
-  double getFitness(std::shared_ptr<llvm::Module> M);
+  double getFitness() { return Fitness; }
+  void calculateFitness(std::shared_ptr<llvm::Module> M);
 
   std::vector<std::string> getGenes() { return Genes; }
-
-private:
-  void calculateFitness(std::shared_ptr<llvm::Module> M);
 };
 
 // class GADNA : public DNA {

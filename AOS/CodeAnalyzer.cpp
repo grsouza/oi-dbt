@@ -33,13 +33,13 @@ double CodeAnalyzer::getIPC(const std::shared_ptr<llvm::Module> &M) {
   int k = 0;
   // llvm::Module to .bc file
   std::error_code EC;
-  llvm::raw_fd_ostream OS("module.bc", EC, llvm::sys::fs::F_None);
+  llvm::raw_fd_ostream OS("region.bc", EC, llvm::sys::fs::F_None);
   WriteBitcodeToFile(*M, OS);
   OS.flush();
   //.bc >> .s
-  std::system("llc module.bc");
+  std::system("llc -march=x86-64 region.bc");
   // call llvm-mca
-  MCAResult = exec("llvm-mca module.s");
+  MCAResult = exec("llvm-mca -march=x86-64 region.s 2> /dev/null");
   // find ipc
   for (int i = 0; i < MCAResult.size(); i++) {
     if (MCAResult[i] == 'I') {
@@ -57,7 +57,7 @@ double CodeAnalyzer::getIPC(const std::shared_ptr<llvm::Module> &M) {
     }
   }
   // remove module.bc and module.s
-  std::system("rm module.*");
+  std::system("rm region.*");
   if (ipc.size() == 0) {
     std::cerr << "Problems with llvm-mca!\n";
     exit(1);

@@ -19,7 +19,6 @@ AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
   auto InputBuffer = llvm::MemoryBuffer::getFile(AOSFilePath);
   llvm::yaml::Input yin(InputBuffer->get()->getBuffer());
 
-  AOSParams Params;
   yin >> Params;
 
   if (yin.error()) {
@@ -28,13 +27,13 @@ AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
   }
 
   switch (Params.ICStrategy.Value) {
-    // case AOSParams::ICStrategy::GA:
-    //   this->Solver = std::make_unique<GASolver>(Params.icStrategy.params.ga);
-    //   break;
-
   case AOSParams::ICStrategyType::ValueType::RMHC:
     ICSolver =
         std::make_unique<RMHCSolver>(Params.ICStrategy.Params.RMHCParams);
+    break;
+
+  case AOSParams::ICStrategyType::ValueType::GA:
+    assert(false && "Strategy not supported");
     break;
   }
 
@@ -63,10 +62,9 @@ AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
 
   getBinaryName(BinaryPath);
 
-  if (Params.Training && Params.CreateDatabase) {
-
-  } else if (!Params.Training) {
-  }
+  // if (Params.Training && Params.CreateDatabase) {
+  // } else if (!Params.Training) {
+  // }
 }
 
 void AOS::getBinaryName(const std::string &Path) {
@@ -101,6 +99,13 @@ void AOS::run(llvm::Module *M) {
 void AOS::runIC(llvm::Module *M) {
   std::string DNA = CTZ->encode(*M);
   auto ICData = ICSolver->solve(M, NOR);
+
+  auto RD = std::make_unique<RegionData>();
+  RD->DNA = DNA;
+  RD->Best.TAs = ICData->getGenes();
+  RD->Best.IPC = ICData->getFitness();
+
+  generateDatabase(std::move(RD));
 }
 
 void AOS::runML(llvm::Module *M) {}

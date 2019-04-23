@@ -20,7 +20,7 @@ std::vector<std::string> RMHCSolver::solve(llvm::Module *M) {
 
   unsigned Generation = 0;
 
-  while (Generation < Params.Generations && !hasStagnated(300)) {
+  while (Generation < Params.Generations && !hasStagnated(Params.Threshold)) {
     History.push_back(
         BestEvaluated->getFitness(std::move(llvm::CloneModule(*M))));
 

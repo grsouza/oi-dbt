@@ -11,6 +11,7 @@ struct TestModeInfo;
 struct RMHCSolverParams {
   unsigned Size, Max, Min;
   unsigned Generations;
+  unsigned Threshold;
 };
 
 class RMHCSolver : public AOSSolver {

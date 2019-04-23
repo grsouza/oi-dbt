@@ -20,6 +20,7 @@ roi: 396
 icStrategy: RMHC
 icStrategyParams:
   generations: 1000
+  threshold: 500
   size: 30
   max: 30
   min: 5

@@ -1,6 +1,7 @@
 #include "AOS.hpp"
 #include "AOSDatabase.hpp"
 #include "AOSParams.hpp"
+#include "CBRSolver.hpp"
 #include "RMHCSolver.hpp"
 
 #include <iostream>
@@ -33,7 +34,7 @@ AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
     break;
 
   case AOSParams::ICStrategyType::ValueType::GA:
-    assert(false && "Strategy not supported");
+    assert(false && "GA not supported");
     break;
   }
 
@@ -43,7 +44,7 @@ AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
     break;
 
   case AOSParams::SimilarityStrategyType::CMP:
-    assert(false && "Strategy not supported.");
+    assert(false && "CMP not supported.");
   }
 
   switch (Params.CharacterizationStrategy) {
@@ -52,11 +53,29 @@ AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
     break;
 
   case AOSParams::CharacterizationStrategyType::DND:
-    assert(false && "Strategy not supported.");
+    assert(false && "DND not supported.");
     break;
 
   case AOSParams::CharacterizationStrategyType::FLL:
-    assert(false && "Strategy not supported.");
+    assert(false && "FLL not supported.");
+    break;
+  }
+
+  switch (Params.MCStrategy) {
+  case AOSParams::MCStrategyType::CBR:
+    MLSolver = std::make_unique<CBRSolver>();
+    break;
+
+  case AOSParams::MCStrategyType::DPL:
+    assert(false && "DPL not supported.");
+    break;
+
+  case AOSParams::MCStrategyType::LTL:
+    assert(false && "LTL not supported.");
+    break;
+
+  case AOSParams::MCStrategyType::RFL:
+    assert(false && "RFL not supported.");
     break;
   }
 
@@ -104,6 +123,7 @@ void AOS::runIC(llvm::Module *M) {
   RD->DNA = DNA;
   RD->Best.TAs = ICData->getGenes();
   RD->Best.IPC = ICData->getFitness();
+  RD->Best.OptTime = ICData->getOptTime();
 
   generateDatabase(std::move(RD));
 }

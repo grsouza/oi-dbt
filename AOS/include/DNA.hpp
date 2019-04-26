@@ -17,6 +17,7 @@ protected:
   std::vector<std::string> Genes;
   bool FitnessCalculated;
   double Fitness;
+  unsigned OptTime;
 
 public:
   explicit DNA(std::vector<std::string> Genes) : Genes(std::move(Genes)) {
@@ -24,6 +25,7 @@ public:
     CA = llvm::make_unique<CodeAnalyzer>();
     FitnessCalculated = false;
     Fitness = 0;
+    OptTime = 0;
   }
 
   DNA &operator=(const DNA &Other) noexcept {
@@ -37,6 +39,7 @@ public:
   void calculateFitness(std::shared_ptr<llvm::Module> M);
 
   std::vector<std::string> getGenes() { return Genes; }
+  unsigned getOptTime() { return OptTime; }
 };
 
 // class GADNA : public DNA {

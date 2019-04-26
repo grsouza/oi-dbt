@@ -15,14 +15,9 @@ void MappingTraits<RegionData>::mapping(IO &io, RegionData &D) {
 void MappingTraits<Data>::mapping(IO &io, Data &D) {
   io.mapRequired("TAs", D.TAs);
   io.mapRequired("IPC", D.IPC);
-  io.mapRequired("CompilationTime", D.CompilationTime);
+  io.mapRequired("OptTime", D.OptTime);
   io.mapRequired("ExecutionTime", D.ExecutionTime);
 }
-
-// void MappingTraits<PopulationData>::mapping(IO &io, PopulationData &D) {
-//   io.mapRequired("Generation", D.Generations);
-//   io.mapRequired("Chromosomes", D.Chromosomes);
-// }
 
 size_t SequenceTraits<std::vector<dbt::Data>>::size(IO &io,
                                                     std::vector<dbt::Data> &D) {
@@ -33,13 +28,3 @@ dbt::Data &SequenceTraits<std::vector<dbt::Data>>::element(
     IO &io, std::vector<dbt::Data> &List, size_t Index) {
   return List[Index];
 }
-
-// size_t SequenceTraits<std::vector<dbt::PopulationData>>::size(
-//     IO &io, std::vector<dbt::PopulationData> &D) {
-//   return D.size();
-// }
-
-// PopulationData &SequenceTraits<std::vector<dbt::PopulationData>>::element(
-//     IO &io, std::vector<dbt::PopulationData> &List, size_t Index) {
-//   return List[Index];
-// }

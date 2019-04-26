@@ -8,5 +8,6 @@ class CodeAnalyzer {
 public:
   CodeAnalyzer() = default;
   static double getIPC(const std::shared_ptr<llvm::Module> &M);
+
 };
 } // namespace dbt

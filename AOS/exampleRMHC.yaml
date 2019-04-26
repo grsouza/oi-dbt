@@ -4,7 +4,7 @@
 updateDatabase: true
 training: true
 
-database: database
+database: ../database/
 
 # SECTION 1: Iterative compilation
 

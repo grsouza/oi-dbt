@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "AOS.hpp"
 #include "AOSDatabase.hpp"
 #include "AOSParams.hpp"
@@ -79,6 +81,7 @@ AOS::AOS(const std::string &AOSFilePath, const std::string &BinaryPath,
     break;
   }
 
+  NOR = 0;
   getBinaryName(BinaryPath);
 
   // if (Params.Training && Params.CreateDatabase) {
@@ -124,6 +127,7 @@ void AOS::runIC(llvm::Module *M) {
   RD->Best.TAs = ICData->getGenes();
   RD->Best.IPC = ICData->getFitness();
   RD->Best.OptTime = ICData->getOptTime();
+  RD->Historic = ICSolver->getHistory();
 
   generateDatabase(std::move(RD));
 }
@@ -132,7 +136,7 @@ void AOS::runML(llvm::Module *M) {}
 
 void AOS::run(llvm::Module *M, ROIInfo R) {
   NOR++;
-  ICSolver->solve(M, R, NOR);
+  ICSolver->solve(M, std::move(R), NOR);
 }
 
 void AOS::generateDatabase(std::unique_ptr<RegionData> RD) {

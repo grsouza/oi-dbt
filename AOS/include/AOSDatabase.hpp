@@ -19,7 +19,7 @@ struct Data {
 
 struct RegionData {
   std::string DNA;
-  std::vector<Data> Historic;
+  std::vector<double> Historic;
   Data Best;
 };
 

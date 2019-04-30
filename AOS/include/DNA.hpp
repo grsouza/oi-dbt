@@ -21,18 +21,22 @@ protected:
 
 public:
   explicit DNA(std::vector<std::string> Genes) : Genes(std::move(Genes)) {
-    IRO = llvm::make_unique<AOSIROpt>();
-    CA = llvm::make_unique<CodeAnalyzer>();
+    IRO = std::make_unique<AOSIROpt>();
+    CA = std::make_unique<CodeAnalyzer>();
     FitnessCalculated = false;
     Fitness = 0;
     OptTime = 0;
   }
 
-  DNA &operator=(const DNA &Other) noexcept {
+  ~DNA() = default;
+
+  DNA(const DNA &Other) {
+    IRO = std::make_unique<AOSIROpt>();
+    CA = std::make_unique<CodeAnalyzer>();
     Genes = Other.Genes;
-    Fitness = Other.Fitness;
     FitnessCalculated = Other.FitnessCalculated;
-    return *this;
+    Fitness = Other.Fitness;
+    OptTime = Other.OptTime;
   }
 
   double getFitness() { return Fitness; }

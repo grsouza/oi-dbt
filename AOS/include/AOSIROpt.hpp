@@ -14,6 +14,7 @@ class AOSIROpt {
 
 public:
   AOSIROpt() = default;
+  ~AOSIROpt() = default;
 
   enum OptLevel { Basic, Soft, Medium, Hard, Custom };
 

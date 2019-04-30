@@ -16,11 +16,14 @@ class RMHCSolver : public AOSICSolver {
   std::vector<double> History;
 
 public:
-  RMHCSolver(AOSParams::RMHCSolverParams Params)
+  explicit RMHCSolver(AOSParams::RMHCSolverParams Params)
       : AOSICSolver(), Params(Params) {}
 
   std::unique_ptr<DNA> solve(llvm::Module *M, unsigned) override;
+
   void solve(llvm::Module *, ROIInfo, unsigned) override;
+
+  std::vector<double> getHistory() override { return History; }
 
 private:
   static std::unique_ptr<DNA> mutate(const std::vector<std::string> &D);

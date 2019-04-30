@@ -17,14 +17,15 @@ std::unique_ptr<DNA> RMHCSolver::solve(llvm::Module *M, unsigned RegionID) {
   Best = generateInitialDNA();
   Best->calculateFitness(std::move(llvm::CloneModule(*M)));
   History.clear();
+  History.push_back(Best->getFitness());
 
   unsigned Generation = 0;
 
   while (Generation < Params.Generations && !hasStagnated(Params.Threshold)) {
-    History.push_back(Best->getFitness());
-
     auto NewDNA = std::move(mutate(Best->getGenes()));
     NewDNA->calculateFitness(std::move(llvm::CloneModule(*M)));
+
+    History.push_back(NewDNA->getFitness());
 
     if (NewDNA->getFitness() < Best->getFitness()) {
       Best = std::move(NewDNA);
@@ -42,7 +43,7 @@ bool RMHCSolver::hasStagnated(unsigned N) {
 
   size_t Size = History.size();
 
-  return History[Size - N - 1] == History[Size - 1];
+  return History[Size - N - 1] <= History[Size - 1];
 }
 
 void RMHCSolver::solve(llvm::Module *M, ROIInfo R, unsigned RegionID) {
@@ -56,6 +57,12 @@ std::unique_ptr<DNA> RMHCSolver::generateInitialDNA() {
   return std::make_unique<DNA>(O3_PASSES);
 }
 
+/**
+ * Apply a mutation to DNA.
+ * A mutation can be INSERT, REMOVE or SWAP.
+ * @param D DNA that will be mutated
+ * @return new DNA
+ */
 std::unique_ptr<DNA> RMHCSolver::mutate(const std::vector<std::string> &D) {
   size_t Size = D.size();
 

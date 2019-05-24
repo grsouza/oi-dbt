@@ -13,7 +13,7 @@ class RMHCSolver : public AOSICSolver {
 
   AOSParams::RMHCSolverParams Params;
   std::unique_ptr<DNA> Best;
-  std::vector<double> History;
+  std::vector<DNA> History;
 
 public:
   explicit RMHCSolver(AOSParams::RMHCSolverParams Params)
@@ -23,7 +23,7 @@ public:
 
   void solve(llvm::Module *, ROIInfo, unsigned) override;
 
-  std::vector<double> getHistory() override { return History; }
+  std::vector<DNA> getHistory() override { return History; }
 
 private:
   static std::unique_ptr<DNA> mutate(const std::vector<std::string> &D);

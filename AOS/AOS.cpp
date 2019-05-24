@@ -119,15 +119,30 @@ void AOS::run(llvm::Module *M) {
 }
 
 void AOS::runIC(llvm::Module *M) {
+  // get region's DNA before optimizations
   std::string DNA = CTZ->encode(*M);
+
+  // search for optimizations using interative compilation
   auto ICData = ICSolver->solve(M, NOR);
 
+  // generate database from solution
   auto RD = std::make_unique<RegionData>();
   RD->DNA = DNA;
   RD->Best.TAs = ICData->getGenes();
   RD->Best.IPC = ICData->getFitness();
   RD->Best.OptTime = ICData->getOptTime();
-  RD->Historic = ICSolver->getHistory();
+  RD->Best.ExecutionTime = 0;
+
+  auto Historic = ICSolver->getHistory();
+
+  for (auto const &S : Historic) {
+    Data D;
+    D.TAs = S.getGenes();
+    D.IPC = S.getFitness();
+    D.OptTime = S.getOptTime();
+    D.ExecutionTime = 0;
+    RD->Historic.push_back(D);
+  }
 
   generateDatabase(std::move(RD));
 }

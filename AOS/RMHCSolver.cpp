@@ -17,7 +17,7 @@ std::unique_ptr<DNA> RMHCSolver::solve(llvm::Module *M, unsigned RegionID) {
   Best = generateInitialDNA();
   Best->calculateFitness(std::move(llvm::CloneModule(*M)));
   History.clear();
-  History.push_back(Best->getFitness());
+  History.push_back(*Best);
 
   unsigned Generation = 0;
 
@@ -25,7 +25,7 @@ std::unique_ptr<DNA> RMHCSolver::solve(llvm::Module *M, unsigned RegionID) {
     auto NewDNA = std::move(mutate(Best->getGenes()));
     NewDNA->calculateFitness(std::move(llvm::CloneModule(*M)));
 
-    History.push_back(NewDNA->getFitness());
+    History.push_back(*NewDNA);
 
     if (NewDNA->getFitness() < Best->getFitness()) {
       Best = std::move(NewDNA);
@@ -43,7 +43,7 @@ bool RMHCSolver::hasStagnated(unsigned N) {
 
   size_t Size = History.size();
 
-  return History[Size - N - 1] <= History[Size - 1];
+  return History[Size - N - 1].getFitness() <= History[Size - 1].getFitness();
 }
 
 void RMHCSolver::solve(llvm::Module *M, ROIInfo R, unsigned RegionID) {

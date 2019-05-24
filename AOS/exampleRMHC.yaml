@@ -11,7 +11,7 @@ database: ../database/
 icStrategy: RMHC
 icStrategyParams:
   generations: 1000
-  threshold: 1000
+  threshold: 300
   times: 4
   max: 30
   min: 5
@@ -34,7 +34,7 @@ characterization: DNA
 #  - (DND) DNA-based approach (OpenISA instructions + data type) ????
 #  - (FLL) The complete region
 
-similarity: NaW
+similarity: CMP
 #  - (NaW) Needleman-Wunsch algoritm
 #  - (CMP) Compress
 

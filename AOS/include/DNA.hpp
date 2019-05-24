@@ -39,11 +39,11 @@ public:
     OptTime = Other.OptTime;
   }
 
-  double getFitness() { return Fitness; }
+  double getFitness() const { return Fitness; }
   void calculateFitness(std::shared_ptr<llvm::Module> M);
 
-  std::vector<std::string> getGenes() { return Genes; }
-  unsigned getOptTime() { return OptTime; }
+  std::vector<std::string> getGenes() const { return Genes; }
+  unsigned getOptTime() const { return OptTime; }
 };
 
 // class GADNA : public DNA {

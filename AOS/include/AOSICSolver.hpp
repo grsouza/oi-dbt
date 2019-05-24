@@ -24,6 +24,6 @@ public:
   virtual std::unique_ptr<DNA> solve(llvm::Module *M, unsigned) = 0;
   virtual void solve(llvm::Module *, ROIInfo, unsigned) = 0;
 
-  virtual std::vector<double> getHistory() = 0;
+  virtual std::vector<DNA> getHistory() = 0;
 };
 } // namespace dbt

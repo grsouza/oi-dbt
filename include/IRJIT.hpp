@@ -20,7 +20,6 @@
 #include "llvm/ExecutionEngine/Orc/CompileUtils.h"
 #include "llvm/ExecutionEngine/Orc/IRCompileLayer.h"
 #include "llvm/ExecutionEngine/Orc/IRTransformLayer.h"
-#include "llvm/ExecutionEngine/Orc/IndirectionUtils.h"
 #include "llvm/ExecutionEngine/Orc/LambdaResolver.h"
 #include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
 #include "llvm/ExecutionEngine/RTDyldMemoryManager.h"
@@ -29,16 +28,12 @@
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Mangler.h"
 #include "llvm/Support/DynamicLibrary.h"
-#include "llvm/Support/Error.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 #include <algorithm>
-#include <cassert>
-#include <cstdlib>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -52,14 +47,13 @@ private:
   std::shared_ptr<SymbolResolver> Resolver;
   std::unique_ptr<TargetMachine> TM;
   const DataLayout DL;
-  LegacyRTDyldObjectLinkingLayer ObjectLayer;
-  LegacyIRCompileLayer<decltype(ObjectLayer), SimpleCompiler> CompileLayer;
+  RTDyldObjectLinkingLayer ObjectLayer;
+  IRCompileLayer<decltype(ObjectLayer), SimpleCompiler> CompileLayer;
 
   using OptimizeFunction =
       std::function<std::unique_ptr<Module>(std::unique_ptr<Module>)>;
 
-  LegacyIRTransformLayer<decltype(CompileLayer), OptimizeFunction>
-      OptimizeLayer;
+  IRTransformLayer<decltype(CompileLayer), OptimizeFunction> OptimizeLayer;
 
 public:
   IRJIT()
@@ -79,7 +73,7 @@ public:
         TM(EngineBuilder().selectTarget()), DL(TM->createDataLayout()),
         ObjectLayer(ES,
                     [this](VModuleKey) {
-                      return LegacyRTDyldObjectLinkingLayer::Resources{
+                      return RTDyldObjectLinkingLayer::Resources{
                           std::make_shared<SectionMemoryManager>(), Resolver};
                     }),
         CompileLayer(ObjectLayer, SimpleCompiler(*TM)),
@@ -105,7 +99,9 @@ public:
     return OptimizeLayer.findSymbol(MangledNameStream.str(), true);
   }
 
-  void removeModule(VModuleKey K) { cantFail(OptimizeLayer.removeModule(K)); }
+  void removeModule(VModuleKey K) {
+    cantFail(OptimizeLayer.removeModule(K));
+  }
 
 private:
   std::unique_ptr<Module> optimizeModule(std::unique_ptr<Module> M) {

@@ -10,8 +10,8 @@ database: ../database/
 
 icStrategy: RMHC
 icStrategyParams:
-  generations: 1000
-  threshold: 300
+  generations: 10
+  threshold: 10
   times: 4
   max: 30
   min: 5

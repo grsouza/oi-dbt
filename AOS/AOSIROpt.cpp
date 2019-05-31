@@ -13,7 +13,6 @@
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
 #include "llvm/Transforms/Scalar/InstSimplifyPass.h"
-#include "llvm/Transforms/Scalar/Scalarizer.h"
 #include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Vectorize.h"
@@ -550,7 +549,7 @@ void dbt::AOSIROpt::populatePassManager(llvm::legacy::PassManager *MPM,
       FPM->add(llvm::createDelinearizationPass());
       break;
     case str2int("-divergence"): // Divergence Analysis
-      FPM->add(llvm::createLegacyDivergenceAnalysisPass());
+      FPM->add(llvm::createDivergenceAnalysisPass());
       break;
     case str2int("-instcount"): // Counts the various types of Instructions
       FPM->add(llvm::createInstCountPass());

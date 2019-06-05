@@ -1,0 +1,7 @@
+/home/guilherme/Downloads/clion-2019.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/guilherme/Sources/OpenISA/oi-dbt
+CMake Error at CMakeLists.txt:10:
+  Parse error.  Expected a command name, got unquoted argument with text
+  "<<<<<<<".
+
+
+-- Configuring incomplete, errors occurred!

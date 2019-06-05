@@ -1,9 +1,9 @@
 #ifndef MANAGER_HPP
 #define MANAGER_HPP
 
-#include <AOS.hpp>
 #include <IREmitter.hpp>
 #include <IRJIT.hpp>
+#include <IROpt.hpp>
 #include <OIPrinter.hpp>
 #include <chrono>
 #include <machine.hpp>
@@ -15,23 +15,23 @@
 #include <timer.hpp>
 #include <unistd.h>
 
+#include <AOS.hpp>
+#include <Utils.hpp>
+
 #include "llvm/Bitcode/BitcodeWriter.h"
 #include "llvm/Support/TargetSelect.h"
 
-#ifndef OIInstList
 #define OIInstList std::vector<std::array<uint32_t, 2>>
-#endif
-
-#define NATIVE_REGION_SIZE 1000000
+#define NATIVE_REGION_SIZE 100000000
 
 namespace dbt {
 struct ROIInfo {
   unsigned RegionID;
   std::vector<std::string> Opts;
 };
+class AOS;
 class IREmitter;
 class Machine;
-class AOS;
 class Manager {
 public:
   enum OptPolitic { None, Normal, Aggressive, Custom };
@@ -40,9 +40,8 @@ private:
   llvm::LLVMContext TheContext;
   dbt::Machine &TheMachine;
   dbt::AOS &TheAOS;
-  std::string RegionPath;
 
-  ROIInfo ROI;
+  std::string RegionPath;
 
   std::vector<uint32_t> OIRegionsKey;
   spp::sparse_hash_map<uint32_t, OIInstList> OIRegions;
@@ -53,7 +52,7 @@ private:
   std::vector<uint32_t> IRRegionsKey;
   std::set<uint32_t> TouchedEntries;
   spp::sparse_hash_map<uint32_t, llvm::Module *> IRRegions;
-  volatile uint64_t NativeRegions[NATIVE_REGION_SIZE];
+  volatile uint64_t *NativeRegions;
 
   mutable std::shared_mutex OIRegionsMtx, IRRegionsMtx, NativeRegionsMtx,
       CompiledOIRegionsMtx;
@@ -68,6 +67,7 @@ private:
   uint32_t DataMemOffset;
 
   std::unique_ptr<IREmitter> IRE;
+  std::unique_ptr<IROpt> IRO;
   std::unique_ptr<llvm::orc::IRJIT> IRJIT;
 
   std::atomic<bool> isRegionRecorging;
@@ -85,6 +85,12 @@ private:
   bool LockMode = false;
   bool ROIMode = false;
 
+  ROIInfo ROI;
+
+  // std::vector<uint64_t> RegionTimes;
+  uint64_t RegionTimes;
+  unsigned RTT;
+
   std::unordered_map<uint32_t, llvm::Module *> ModulesLoaded;
   bool IsToLoadRegions = false;
   bool IsToDoWholeCompilation = false;
@@ -94,18 +100,24 @@ private:
   llvm::Module *loadRegionFromFile(std::string);
   void loadRegionsFromFiles();
 
+  std::ofstream *PerfMapFile;
+
   void inlineCall(uint32_t, uint32_t, OIInstList &, std::set<uint32_t> &,
                   llvm::Module *);
 
   void runPipeline();
-  std::ofstream *PerfMapFile;
 
 public:
+  std::mutex BRFT;
+  std::condition_variable cvRFT;
+  std::atomic<bool> isCompiling;
+
   Manager(uint32_t DMO, dbt::Machine &M, dbt::AOS &A, bool VO = false,
           bool Inline = false)
       : DataMemOffset(DMO), isRunning(true), isFinished(false),
         VerboseOutput(VO), TheMachine(M), TheAOS(A), NumOfOIRegions(0),
-        IsToInline(Inline) {
+        IsToInline(Inline), RegionTimes(0), RTT(0) {
+    NativeRegions = new uint64_t[NATIVE_REGION_SIZE];
     memset((void *)NativeRegions, 0, sizeof(NativeRegions));
   }
 
@@ -129,17 +141,22 @@ public:
   ~Manager() {
     // Alert threads to stop
     isRunning = false;
+    cv.notify_all();
 
     // Waits the thread finish
     if (ThreadPool.size() != 0) {
       while (!isFinished) {
       }
 
-      for (unsigned i = 0; i < ThreadPool.size(); i++) {
-        if (!ThreadPool[i].joinable())
-          ThreadPool[i].join();
-      }
+      for (unsigned i = 0; i < ThreadPool.size(); i++)
+        ThreadPool[i].join();
     }
+
+    for (auto &M : IRRegions) {
+      delete M.second;
+    }
+
+    delete NativeRegions;
   }
 
   void setOptPolicy(OptPolitic OM) { OptMode = OM; }
@@ -154,30 +171,26 @@ public:
 
   bool getLockMode() { return LockMode; }
 
+  void setROI(ROIInfo R) { ROI = R; }
+
+  ROIInfo getROI() { return ROI; }
+
   void setROIMode() { ROIMode = true; }
 
   bool getROIMode() { return ROIMode; }
 
-  void setROI(ROIInfo R) { ROI = R; }
+  uint64_t getRegionTime() {
+    if (!RTT)
+      return 0;
 
-  ROIInfo getROI() { return ROI; }
+    return RegionTimes / RTT;
+  }
 
   unsigned getCompiledRegions(void) { return CompiledRegions; }
 
   unsigned getOICompiled(void) { return OICompiled; }
 
   bool getRegionRecording(void) { return static_cast<bool>(isRegionRecorging); }
-
-  bool isRegionEntry(uint32_t EntryAddress) {
-    if (NativeRegions[EntryAddress] != 0)
-      return true;
-    else {
-      OIRegionsMtx.lock_shared();
-      bool hasRegion = OIRegions.count(EntryAddress) != 0;
-      OIRegionsMtx.unlock_shared();
-      return hasRegion;
-    }
-  }
 
   void setRegionRecorging(bool value) { isRegionRecorging = value; }
 
@@ -199,6 +212,17 @@ public:
   bool addOIRegion(uint32_t, OIInstList);
 
   int32_t jumpToRegion(uint32_t);
+
+  bool isRegionEntry(uint32_t EntryAddress) {
+    if (NativeRegions[EntryAddress] != 0)
+      return true;
+    else {
+      OIRegionsMtx.lock_shared();
+      bool hasRegion = OIRegions.count(EntryAddress) != 0;
+      OIRegionsMtx.unlock_shared();
+      return hasRegion;
+    }
+  }
 
   inline bool isNativeRegionEntry(uint32_t EntryAddress) {
     return (NativeRegions[EntryAddress] != 0);
@@ -258,9 +282,10 @@ public:
       std::error_code EC;
       llvm::raw_fd_ostream OS("r" + std::to_string(OIRegion.first) + ".oi", EC,
                               llvm::sys::fs::F_None);
-      for (auto OIInsts : OIRegion.second)
-        OS << OIInsts[0] << "\t" << OIInsts[1] << "\t"
+      for (auto OIInsts : OIRegion.second) {
+        OS << "\t" << OIInsts[0] << "\t" << OIInsts[1] << "\t"
            << OIPrinter::getString(OIDecoder::decode(OIInsts[1])) << "\n";
+      }
       OS.flush();
     }
 

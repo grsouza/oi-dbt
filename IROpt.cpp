@@ -27,9 +27,9 @@ constexpr unsigned int str2int(const char* str, int h = 0) {
 void dbt::IROpt::populateFuncPassManager(llvm::legacy::FunctionPassManager* FPM, std::vector<std::string> PassesNames) {
   for (std::string PassName : PassesNames) {
     switch (str2int(PassName.c_str())) {
-      //case str2int("instcombine"):
-      //  FPM->add(llvm::createInstructionCombiningPass());
-      //  break;
+      case str2int("instcombine"):
+        FPM->add(llvm::createInstructionCombiningPass());
+        break;
       case str2int("simplifycfg"):
         FPM->add(llvm::createCFGSimplificationPass());
         break;
@@ -87,23 +87,23 @@ void dbt::IROpt::customOptimizeIRFunction(llvm::Module* M, std::vector<std::stri
     PM->run(F);
 }
 
-void dbt::IROpt::optimizeIRFunction(llvm::Module *M, OptLevel Level, dbt::AOS& A) {
+void dbt::IROpt::optimizeIRFunction(llvm::Module *M, OptLevel Level, uint32_t EntryAddress) {
   // Lazy initialization
   if (Level == OptLevel::Basic) {
     if (!BasicPM) {
       BasicPM = std::make_unique<llvm::legacy::FunctionPassManager>(M);
       populateFuncPassManager(BasicPM.get(), 
-        { "simplifycfg", "reassociate", "gvn", "die", "dce", "instcombine", "licm", 
-        "memcpyopt", "loop-unswitch", "instcombine", "indvars", "loop-deletion", "loop-predication", "loop-unroll","simplifycfg", "instcombine", "licm", "gvn"});
+        {"instcombine", "simplifycfg", "reassociate", "gvn", "die", "dce", "instcombine", "licm", 
+        "memcpyopt", "loop-unswitch", "instcombine", "indvars", "loop-deletion", "loop-predication", "loop-unroll",
+        "simplifycfg", "instcombine", "licm", "gvn"});
       BasicPM->doInitialization();
 
-      auto MPM = std::make_unique<llvm::legacy::PassManager>();
-      MPM->add(llvm::createIPSCCPPass());
-      MPM->add(llvm::createFunctionInliningPass());
-      MPM->add(llvm::createPartialInliningPass());
-      MPM->run(*M);
     }
-    for (auto &F : *M)
+/*    auto MPM = std::make_unique<llvm::legacy::PassManager>();
+    MPM->add(llvm::createFunctionInliningPass());
+    MPM->run(*M);*/
+
+    for (auto& F : *M)
       BasicPM->run(F);
   } 
 }
